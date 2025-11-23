@@ -2,11 +2,23 @@ import type { Metadata } from "next";
 import { Container } from "@/components/container";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { getMDXContent } from "@/lib/mdx";
+import { MDXRemote } from "next-mdx-remote/rsc";
 
-export const metadata: Metadata = {
-  title: "Project Detail | Faris Ashai",
-  description: "Case study details.",
-};
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const slug = (await params).slug;
+  try {
+    const { frontmatter } = await getMDXContent("work", slug);
+    return {
+      title: `${frontmatter.title} | Faris Ashai`,
+      description: frontmatter.description,
+    };
+  } catch {
+    return {
+      title: "Project Not Found",
+    };
+  }
+}
 
 export default async function ProjectPage({
   params,
@@ -15,52 +27,44 @@ export default async function ProjectPage({
 }) {
   const slug = (await params).slug;
   
-  return (
-    <Container className="max-w-3xl py-12 sm:py-24">
-      <Link 
-        href="/work" 
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Back to Work
-      </Link>
+  try {
+    const { content, frontmatter } = await getMDXContent("work", slug);
 
-      <article className="flex flex-col gap-8">
-        <div className="flex flex-col gap-4">
-          <h1 className="font-serif text-4xl font-medium italic tracking-tight">
-            Project Title {slug}
-          </h1>
-          <div className="flex gap-4 text-sm text-muted-foreground font-mono uppercase tracking-wider">
-            <span>2024</span>
-            <span>•</span>
-            <span>Infrastructure</span>
+    return (
+      <Container className="max-w-3xl py-8 sm:py-12">
+        <Link  
+          href="/work" 
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Work
+        </Link>
+
+        <article className="flex flex-col gap-8">
+          <div className="flex flex-col gap-4">
+            <h1 className="font-serif text-4xl font-medium italic tracking-tight">
+              {frontmatter.title}
+            </h1>
+            <div className="flex gap-4 text-sm text-muted-foreground font-mono uppercase tracking-wider">
+              <span>{frontmatter.year}</span>
+              <span>•</span>
+              <span>{frontmatter.category || frontmatter.tech}</span>
+            </div>
           </div>
-        </div>
 
-        <div className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed">
-          <p className="text-xl font-medium text-foreground leading-relaxed mb-8">
-            This is a placeholder for the case study content. In the real implementation, 
-            this would be populated by MDX or a CMS.
-          </p>
-          <p>
-            The case study should cover:
-          </p>
-          <ul>
-            <li>What you built</li>
-            <li>Why it mattered</li>
-            <li>The interesting engineering decisions</li>
-            <li>Tradeoffs</li>
-            <li>What you’d revise today</li>
-          </ul>
-          <hr className="my-8 border-border" />
-          <h3>The Challenge</h3>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-          </p>
-        </div>
-      </article>
-    </Container>
-  );
+          <div className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed 
+            prose-headings:font-medium prose-headings:text-foreground 
+            prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground">
+            <MDXRemote source={content} />
+          </div>
+        </article>
+      </Container>
+    );
+  } catch {
+    return (
+      <Container className="max-w-3xl py-12 sm:py-24">
+        <p>Project not found.</p>
+      </Container>
+    );
+  }
 }
-

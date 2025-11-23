@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 
 export function ModeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -17,18 +17,20 @@ export function ModeToggle() {
     return <div className="w-9 h-9" />; // Placeholder to avoid layout shift
   }
 
+  const isDark = resolvedTheme === "dark";
+
   return (
     <button
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
       className="relative w-9 h-9 rounded-full hover:bg-secondary transition-colors"
       aria-label="Toggle theme"
     >
       <motion.div
         initial={false}
         animate={{
-          scale: theme === "dark" ? 0 : 1,
-          opacity: theme === "dark" ? 0 : 1,
-          rotate: theme === "dark" ? 90 : 0,
+          scale: isDark ? 0 : 1,
+          opacity: isDark ? 0 : 1,
+          rotate: isDark ? 90 : 0,
         }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className="absolute top-2 left-2 text-foreground"
@@ -38,9 +40,9 @@ export function ModeToggle() {
       <motion.div
         initial={false}
         animate={{
-          scale: theme === "dark" ? 1 : 0,
-          opacity: theme === "dark" ? 1 : 0,
-          rotate: theme === "dark" ? 0 : -90,
+          scale: isDark ? 1 : 0,
+          opacity: isDark ? 1 : 0,
+          rotate: isDark ? 0 : -90,
         }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className="absolute top-2 left-2 text-foreground"
