@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 const pages = [
   { name: "Home", href: "/", icon: Layout },
   { name: "Work", href: "/work", icon: Layout },
-  { name: "Experiments", href: "/experiments", icon: FlaskConical },
+  // { name: "Experiments", href: "/experiments", icon: FlaskConical },
   { name: "About", href: "/about", icon: Layout },
   { name: "Journal", href: "/journal", icon: FileText },
 ];
