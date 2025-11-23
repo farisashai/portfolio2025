@@ -2,11 +2,11 @@ export const dynamic = "force-static";
 
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
-import { Nav } from "@/components/nav";
-import { Footer } from "@/components/footer";
-import { ThemeProvider } from "@/components/theme-provider";
-import { PageTransition } from "@/components/page-transition";
 import { CommandMenu } from "@/components/command-menu";
+import { Footer } from "@/components/footer";
+import { Nav } from "@/components/nav";
+import { PageTransition } from "@/components/page-transition";
+import { ThemeProvider } from "@/components/theme-provider";
 import { getAllMDXContent } from "@/lib/mdx";
 import "./globals.css";
 
@@ -54,9 +54,9 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <CommandMenu 
-            projects={projects.map(p => ({ title: p.title, slug: p.slug }))} 
-            journal={journal.map(j => ({ title: j.title, slug: j.slug }))} 
+          <CommandMenu
+            projects={projects.map((p) => ({ title: p.title, slug: p.slug }))}
+            journal={journal.map((j) => ({ title: j.title, slug: j.slug }))}
           />
           <Nav />
           <PageTransition>{children}</PageTransition>

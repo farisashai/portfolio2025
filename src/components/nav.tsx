@@ -1,11 +1,11 @@
 "use client";
 
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
 import { Container } from "@/components/container";
-import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
+import { cn } from "@/lib/utils";
 
 const navItems = [
   { name: "Work", path: "/work" },
@@ -15,7 +15,7 @@ const navItems = [
 ];
 
 export function Nav() {
-const pathname = usePathname();
+  const pathname = usePathname();
 
   return (
     <nav className="w-full py-8 sm:py-12 mb-8 sm:mb-16">
@@ -33,12 +33,14 @@ const pathname = usePathname();
                   href={item.path}
                   className={cn(
                     "relative text-sm transition-colors hover:text-foreground flex flex-col items-center justify-center",
-                    isActive ? "text-foreground font-medium" : "text-muted-foreground"
+                    isActive
+                      ? "text-foreground font-medium"
+                      : "text-muted-foreground",
                   )}
                 >
                   {/* Hidden bold text to reserve space */}
                   <span className="invisible font-medium">{item.name}</span>
-                  
+
                   {/* Visible text positioned absolutely to center */}
                   <span className="absolute inset-0 flex items-center justify-center">
                     {item.name}

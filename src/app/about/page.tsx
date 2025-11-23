@@ -4,7 +4,8 @@ import { ExternalLink } from "@/components/external-link";
 
 export const metadata: Metadata = {
   title: "About | Faris Ashai",
-  description: "My background, philosophy, and approach to software engineering.",
+  description:
+    "My background, philosophy, and approach to software engineering.",
 };
 
 interface HistoryItem {
@@ -63,12 +64,12 @@ const history: HistoryItem[] = [
     company: "UC San Diego",
     start: new Date(2019, 8), // Sept 2019
     end: new Date(2023, 5), // June 2023
-  }
+  },
 ];
 
 function formatDateRange(start: Date, end?: Date) {
   if (!end) return "Now";
-  
+
   const startYear = start.getFullYear();
   const endYear = end.getFullYear();
   const startMonth = start.toLocaleDateString("en-US", { month: "short" });
@@ -77,11 +78,11 @@ function formatDateRange(start: Date, end?: Date) {
   if (startYear !== endYear) {
     return `${startYear}—${endYear}`;
   }
-  
+
   if (startMonth === endMonth) {
     return `${startMonth} ${startYear}`;
   }
-  
+
   return `${startMonth}—${endMonth} ${startYear}`;
 }
 
@@ -102,28 +103,46 @@ export default function AboutPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-8 md:gap-12">
-          
           {/* Professional Identity */}
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">Identity</h2>
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">
+            Identity
+          </h2>
           <div className="flex flex-col gap-6 text-lg leading-relaxed text-muted-foreground">
             <p>
-              I’m a software engineer who cares deeply about building fast, thoughtful, and well-designed products. Over the past five years I’ve worked across many layers of the stack, primarily focused on frontend systems, refining interactions, and making interfaces feel purposeful and responsive.
+              I’m a software engineer who cares deeply about building fast,
+              thoughtful, and well-designed products. Over the past five years
+              I’ve worked across many layers of the stack, primarily focused on
+              frontend systems, refining interactions, and making interfaces
+              feel purposeful and responsive.
             </p>
             <p>
-              I enjoy systems thinking just as much as product polish, whether that means improving reliability, smoothing out abstractions, or tightening performance. I try to approach every project with intention and a high bar for quality, always looking for the small decisions that make a product feel cohesive.
+              I enjoy systems thinking just as much as product polish, whether
+              that means improving reliability, smoothing out abstractions, or
+              tightening performance. I try to approach every project with
+              intention and a high bar for quality, always looking for the small
+              decisions that make a product feel cohesive.
             </p>
             <p>
-              Outside of work, you’ll usually find me exploring new coffee and tea spots, chasing sunsets, listening to live music, or traveling somewhere new.
+              Outside of work, you’ll usually find me exploring new coffee and
+              tea spots, chasing sunsets, listening to live music, or traveling
+              somewhere new.
             </p>
           </div>
 
           {/* History */}
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">History</h2>
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">
+            History
+          </h2>
           <div className="flex flex-col gap-5">
             {sortedHistory.map((item) => (
-              <div key={item.role + item.company} className="flex justify-between items-start gap-4">
+              <div
+                key={item.role + item.company}
+                className="flex justify-between items-start gap-4"
+              >
                 <div className="flex flex-col">
-                  <span className="font-medium text-foreground">{item.role}</span>
+                  <span className="font-medium text-foreground">
+                    {item.role}
+                  </span>
                   <span className="text-muted-foreground">{item.company}</span>
                 </div>
                 <span className="text-sm tabular-nums text-muted-foreground shrink-0 text-right">
@@ -134,9 +153,11 @@ export default function AboutPage() {
           </div>
 
           {/* Awards */}
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">Awards</h2>
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">
+            Awards
+          </h2>
           <div className="flex flex-col gap-4">
-             <div className="flex flex-col">
+            <div className="flex flex-col">
               <ExternalLink
                 href="https://top.mlh.io/2022/profiles/faris-ashai"
                 className="font-medium text-foreground"
@@ -151,11 +172,15 @@ export default function AboutPage() {
           </div>
 
           {/* Values */}
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">Values</h2>
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">
+            Values
+          </h2>
           <ul className="flex flex-col gap-3 text-base text-muted-foreground">
             <li className="flex items-start gap-3">
               <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-              <span>Study fundamentals, experiment often with a playful attitude</span>
+              <span>
+                Study fundamentals, experiment often with a playful attitude
+              </span>
             </li>
             <li className="flex items-start gap-3">
               <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
@@ -163,26 +188,43 @@ export default function AboutPage() {
             </li>
             <li className="flex items-start gap-3">
               <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-              <span>Tackle classes of problems not problems, avoid bandaid fixes and stopgap solutions</span>
+              <span>
+                Tackle classes of problems not problems, avoid bandaid fixes and
+                stopgap solutions
+              </span>
             </li>
-             <li className="flex items-start gap-3">
+            <li className="flex items-start gap-3">
               <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-              <span>Static determinism through rules to reduce errors: knowledge base, architecture docs, opinionated linters and formatters, syntax rules, structural rules</span>
+              <span>
+                Static determinism through rules to reduce errors: knowledge
+                base, architecture docs, opinionated linters and formatters,
+                syntax rules, structural rules
+              </span>
             </li>
-             <li className="flex items-start gap-3">
+            <li className="flex items-start gap-3">
               <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-              <span>Beauty = delight + performance + correctness + simplicity</span>
+              <span>
+                Beauty = delight + performance + correctness + simplicity
+              </span>
             </li>
           </ul>
 
           {/* Now */}
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">Now</h2>
+          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">
+            Now
+          </h2>
           <div className="flex flex-col gap-6 text-lg leading-relaxed text-muted-foreground">
             <p>
-              Currently, I&apos;m focused on building end-to-end type-safe systems and visual tools that lower the barrier to entry for complex logic.
+              Currently, I&apos;m focused on building end-to-end type-safe
+              systems and visual tools that lower the barrier to entry for
+              complex logic.
             </p>
             <p>
-              I&apos;m diving deep into **AST parsing** and **domain-specific languages** to build better developer tools, as seen in my work on the Visual Rego Editor. I&apos;m also exploring how to bridge the gap between backend and frontend type systems more effectively using tools like `proto-to-trpc`.
+              I&apos;m diving deep into **AST parsing** and **domain-specific
+              languages** to build better developer tools, as seen in my work on
+              the Visual Rego Editor. I&apos;m also exploring how to bridge the
+              gap between backend and frontend type systems more effectively
+              using tools like `proto-to-trpc`.
             </p>
           </div>
         </div>

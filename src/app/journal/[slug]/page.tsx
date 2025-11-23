@@ -1,11 +1,11 @@
 export const dynamic = "force-static";
 
-import type { Metadata } from "next";
-import { Container } from "@/components/container";
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getMDXContent, getAllMDXContent } from "@/lib/mdx";
+import type { Metadata } from "next";
+import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import { Container } from "@/components/container";
+import { getAllMDXContent, getMDXContent } from "@/lib/mdx";
 
 export async function generateStaticParams() {
   const entries = await getAllMDXContent("journal");
@@ -14,7 +14,11 @@ export async function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const slug = (await params).slug;
   try {
     const { frontmatter } = await getMDXContent("journal", slug);
@@ -41,8 +45,8 @@ export default async function JournalEntryPage({
 
     return (
       <Container className="max-w-2xl py-8 sm:py-12">
-        <Link 
-          href="/journal" 
+        <Link
+          href="/journal"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-12"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -61,9 +65,11 @@ export default async function JournalEntryPage({
             </h1>
           </header>
 
-          <div className="prose prose-neutral dark:prose-invert max-w-none leading-7 sm:leading-8 
+          <div
+            className="prose prose-neutral dark:prose-invert max-w-none leading-7 sm:leading-8 
             prose-headings:font-medium prose-headings:text-foreground 
-            prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground">
+            prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground"
+          >
             <MDXRemote source={content} />
           </div>
         </article>

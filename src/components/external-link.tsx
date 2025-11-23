@@ -1,10 +1,14 @@
 import { ArrowUpRight } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type * as React from "react";
+import { cn } from "@/lib/utils";
 
 type ExternalLinkProps = React.ComponentPropsWithoutRef<"a">;
 
-export function ExternalLink({ className, children, ...props }: ExternalLinkProps) {
+export function ExternalLink({
+  className,
+  children,
+  ...props
+}: ExternalLinkProps) {
   return (
     <a
       {...props}

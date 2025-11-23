@@ -1,6 +1,6 @@
 import fs from "fs";
-import path from "path";
 import matter from "gray-matter";
+import path from "path";
 
 const contentDirectory = path.join(process.cwd(), "src/content");
 
@@ -14,7 +14,7 @@ export async function getMDXContent(type: "work" | "journal", slug: string) {
 export async function getAllMDXContent(type: "work" | "journal") {
   const directory = path.join(contentDirectory, type);
   if (!fs.existsSync(directory)) return [];
-  
+
   const files = fs.readdirSync(directory);
   return files.map((file) => {
     const slug = file.replace(/\.mdx$/, "");
@@ -23,4 +23,3 @@ export async function getAllMDXContent(type: "work" | "journal") {
     return { ...data, slug };
   });
 }
-
