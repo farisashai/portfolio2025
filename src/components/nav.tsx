@@ -15,7 +15,7 @@ const navItems = [
 ];
 
 export function Nav() {
-  const pathname = usePathname();
+const pathname = usePathname();
 
   return (
     <nav className="w-full py-8 sm:py-12 mb-8 sm:mb-16">
@@ -32,15 +32,22 @@ export function Nav() {
                   key={item.path}
                   href={item.path}
                   className={cn(
-                  "relative text-sm transition-colors hover:text-foreground",
-                  isActive ? "text-foreground font-medium" : "text-muted-foreground"
-                )}
+                    "relative text-sm transition-colors hover:text-foreground flex flex-col items-center justify-center",
+                    isActive ? "text-foreground font-medium" : "text-muted-foreground"
+                  )}
                 >
-                  {item.name}
+                  {/* Hidden bold text to reserve space */}
+                  <span className="invisible font-medium">{item.name}</span>
+                  
+                  {/* Visible text positioned absolutely to center */}
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    {item.name}
+                  </span>
+
                   {isActive && (
                     <motion.div
                       layoutId="underline"
-                      className="absolute -bottom-[2px] left-0 right-0 h-[1px] bg-foreground"
+                      className="absolute -bottom-[2px] left-0 right-0 h-px bg-foreground"
                     />
                   )}
                 </Link>

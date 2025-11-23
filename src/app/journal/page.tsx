@@ -17,25 +17,6 @@ interface Entry {
 
 
 const entries: Entry[] = [
-  {
-    title: "On Software Longevity",
-    date: "November 2025",
-    category: "Engineering",
-    slug: "software-longevity",
-  },
-
-  {
-    date: "September 2025",
-    category: "Engineering",
-    slug: "return-to-static",
-    title: "The Return to Static",
-  },
-  {
-    date: "August 2025",
-    category: "Design",
-    slug: "ambient-computing",
-    title: "Ambient Computing",
-  },
 ];
 
 export default function JournalPage() {
@@ -45,31 +26,29 @@ export default function JournalPage() {
         <div className="flex flex-col gap-2">
           <h1 className="font-serif text-3xl font-medium italic">Journal</h1>
           <p className="text-muted-foreground text-lg">
-            Writing about craft, systems, and observations.
+            Writings about craft, systems, and observations.
           </p>
         </div>
 
-        <div className="flex flex-col mt-8">
+        <div className="flex flex-col">
           {entries.length > 0 ? (
             entries.map((entry) => (
               <Link 
                 key={entry.slug} 
                 href={`/journal/${entry.slug}`}
-                className="group flex flex-col -mx-4 px-4 py-4 hover:bg-secondary rounded-lg transition-none"
+                className="group flex items-center justify-between py-4 border-b border-border last:border-0 hover:bg-transparent"
               >
-                <div className="flex items-baseline justify-between border-b border-border group-hover:border-transparent pb-4 transition-none">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4">
-                      <h2 className="text-xl font-medium text-foreground">
-                        {entry.title}
-                      </h2>
-                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider border border-border px-1.5 py-0.5 rounded-full self-start sm:self-auto">
-                        {entry.category}
-                      </span>
-                  </div>
-                  <span className="text-sm text-muted-foreground tabular-nums shrink-0 ml-4 font-mono">
-                    {entry.date}
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-lg font-medium text-foreground group-hover:text-muted-foreground transition-colors">
+                    {entry.title}
+                  </h2>
+                  <span className="text-sm text-muted-foreground">
+                    {entry.category}
                   </span>
                 </div>
+                <span className="text-sm text-muted-foreground tabular-nums font-mono">
+                  {entry.date}
+                </span>
               </Link>
             ))
           ) : (

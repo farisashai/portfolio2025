@@ -1,15 +1,18 @@
+export const dynamic = "force-static";
+
 import type { Metadata } from "next";
-import { Inter, Geist_Mono, Newsreader } from "next/font/google";
+import { Geist, Geist_Mono, Newsreader } from "next/font/google";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PageTransition } from "@/components/page-transition";
+import { CommandMenu } from "@/components/command-menu";
+import { getAllMDXContent } from "@/lib/mdx";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -30,15 +33,18 @@ export const metadata: Metadata = {
     "Software Engineer focused on UI systems and interaction design.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const projects = await getAllMDXContent("work");
+  const journal = await getAllMDXContent("journal");
+
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} ${newsreader.variable}`}
+      className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable}`}
       suppressHydrationWarning
     >
       <body className="antialiased bg-background text-foreground selection:bg-neutral-200 selection:text-black dark:selection:bg-neutral-700 dark:selection:text-white min-h-screen flex flex-col transition-colors duration-300 ease-in-out">
@@ -48,6 +54,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <CommandMenu 
+            projects={projects.map(p => ({ title: p.title, slug: p.slug }))} 
+            journal={journal.map(j => ({ title: j.title, slug: j.slug }))} 
+          />
           <Nav />
           <PageTransition>{children}</PageTransition>
           <Footer />

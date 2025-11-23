@@ -1,9 +1,18 @@
+export const dynamic = "force-static";
+
 import type { Metadata } from "next";
 import { Container } from "@/components/container";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getMDXContent } from "@/lib/mdx";
+import { getMDXContent, getAllMDXContent } from "@/lib/mdx";
 import { MDXRemote } from "next-mdx-remote/rsc";
+
+export async function generateStaticParams() {
+  const entries = await getAllMDXContent("journal");
+  return entries.map((entry) => ({
+    slug: entry.slug,
+  }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const slug = (await params).slug;

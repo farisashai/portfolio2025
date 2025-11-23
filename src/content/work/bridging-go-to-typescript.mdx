@@ -1,0 +1,45 @@
+---
+title: "Bridging the Server Boundary from Go to TypeScript"
+description: "Generating end-to-end type-safe tRPC clients from Protocol Buffers."
+year: "November 2025"
+tech: "Go, TypeScript, Protobuf, tRPC"
+category: "Developer Experience"
+---
+
+Eliminating the friction of maintaining frontend types for a gRPC Go backend.
+
+## The Disconnect
+
+Our backend services were written in Go, defined by Protocol Buffers and OpenAPI specs. Our frontend was TypeScript. This created a classic boundary problem: synchronizing types.
+
+We often found ourselves redefining types on the UI for consistency, manually inspecting network responses to debug shape mismatches, or relying on exported proto files from the Buf registry. The latter added package management overhead and cost money, while manual redefinition was a recipe for drift and runtime errors.
+
+## The Solution: proto-to-trpc
+
+To solve this, I built `proto-to-trpc`, a tool designed to completely replace this disjointed workflow. It runs locally on a directory of `.proto` files and generates exact, type-safe ConnectRPC definitions that can be checked directly into the codebase.
+
+### Workflow Integration
+
+This tool flexibility supports two primary workflows:
+1.  **Monorepo:** Run it as part of the build process. Backend proto changes immediately update frontend types, causing build failures if breaking changes occur.
+2.  **Separate Repos:** Run it in a CI workflow and publish the generated artifacts to a private npm registry, providing a versioned, installable package for the frontend.
+
+## End-to-End Type Safety
+
+The real power of `proto-to-trpc` isn't just type generation—it's client generation.
+
+By analyzing the service definitions, the tool auto-generates a tRPC-compatible client that wraps the underlying RPC calls. This provides 100% type safety for both server and client API interactions.
+
+### Developer Experience
+
+Engineers can now write code with full confidence and zero context switching:
+
+```typescript
+// Full autocomplete at every step: Service -> Method -> Input
+const { data } = api.userService.getUser.useQuery({ id: "123" });
+```
+
+-   **Inferred Operations:** The tool intelligently infers whether an RPC should be a `useQuery` or `useMutation` based on the RPC verb standard (e.g., `Get` vs `Update`), integrating seamlessly with **TanStack Query**.
+-   **Zero Config Imports:** It handles first-party and third-party proto imports internally, meaning you don't need complex mapping configurations to get started.
+-   **Extensibility:** The generated client includes a clear pass-through layer, allowing you to overwrite or extend specific behaviors without ejecting from the generated code.
+

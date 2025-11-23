@@ -1,9 +1,18 @@
+export const dynamic = "force-static";
+
 import type { Metadata } from "next";
 import { Container } from "@/components/container";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { getMDXContent } from "@/lib/mdx";
+import { getMDXContent, getAllMDXContent } from "@/lib/mdx";
 import { MDXRemote } from "next-mdx-remote/rsc";
+
+export async function generateStaticParams() {
+  const projects = await getAllMDXContent("work");
+  return projects.map((project) => ({
+    slug: project.slug,
+  }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const slug = (await params).slug;
@@ -32,7 +41,7 @@ export default async function ProjectPage({
 
     return (
       <Container className="max-w-3xl py-8 sm:py-12">
-        <Link  
+        <Link 
           href="/work" 
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
         >

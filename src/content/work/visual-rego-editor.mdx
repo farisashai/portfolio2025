@@ -1,0 +1,45 @@
+---
+title: "Visual Code Editor"
+description: "Building a block-based editor for Open Policy Agent's Rego language."
+year: "October 2025"
+tech: "React, TypeScript, Rego, AST Parsing"
+category: "Product Engineering"
+---
+
+Building a visual interface for policy-as-code that balances power and accessibility.
+
+## The Challenge
+Strong primitives are the foundation of useful abstractions. When building our data security product, we made the strategic decision to build on top of **Rego** (Open Policy Agent) rather than inventing a bespoke JSON schema for allow/deny rules. Rego is the industry standard for policy-as-code, offering flexibility and a robust ecosystem. By choosing a solid functional core, we ensured that any abstractions we built on top would be resilient—we'd never need to rip out the fundamentals and rebuild the entire stack.
+
+However, strong fundamentals alone offer poor UX. Rego's syntax is closer to code that isn't streamlined, doesn't help users discover recommended flows, and has significant barriers to entry and learning curves. For many of our customers—often security analysts or compliance officers rather than engineers—writing raw policy code is difficult and error-prone. To maximize customer value, we needed to bridge this gap without compromising the underlying power of the engine. A visual wrapper was the logical next step to extend our product features.
+
+## The Complexity of "Simple" Blocks
+
+While Rego isn't Turing-complete, its grammar is rich. It supports:
+- Arbitrary comments and indentation
+- Nested objects and arrays
+- Functions and custom rules
+- Imports and package declarations
+
+Building a "Scratch-style" block-based wrapper for such a language is a dangerous path. It risks becoming an abstraction over an entire programming language, which often devolves into just "writing code through a more bloated UI." If you do it wrong, you recreate the complexity of code with none of the speed.
+
+## The Solution: Limited Abstractions & AST Parsing
+
+Our approach was to avoid total coverage. Instead of mapping every possible Rego construct to a UI element, we:
+
+1.  **Parsed the Abstract Syntax Tree (AST):** We transform raw Rego into a high-level Domain Specific Language (DSL) that has a strictly **1:1 correspondence** with our visual elements.
+2.  **Limited Scope:** We intentionally discard complex syntax from the visual representation. We support a growing set of "happy paths"—the 80% of rules users actually need to write.
+3.  **Hybrid Editing:** Users are told they can continue with complex logic in code. Crucially, they can do this *in the same file*.
+
+## Technical Implementation: Zero Side-Effect Edits
+
+To support this hybrid editing without destroying user comments or formatting, we couldn't just regenerate the entire file from our AST. We needed surgical precision.
+
+Open Policy Agent's first-party AST tooling is distributed as a Go package, which initially meant we had to round-trip each keystroke to a backend service for parsing. That network hop made the editor feel sluggish and expensive. We compiled the parser into a WebAssembly module instead, shipped it with the frontend bundle, and reused the already-fetched policy text in memory. The result was near-zero latency parsing and block updates without touching the network after initial load.
+
+We implemented a system using **regex segmentation** to creating location-based indexes. By mapping code segments 1:1 with visual blocks at a defined granularity, we maintained:
+- **Segment IDs:** Each visual block knows exactly which chunk of the original string it corresponds to.
+- **Character Locations:** We track start and end indices for every segment.
+
+When a user edits a rule visually, we use these indices to perform **substring replacement** on the original raw string. This allows us to update the specific logic the user changed while guaranteeing **zero side effects** to the rest of their code—preserving their comments, their custom indentation, and their "unsupported" complex logic living right next door.
+
