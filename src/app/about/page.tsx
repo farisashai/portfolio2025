@@ -194,12 +194,6 @@ export default function AboutPage() {
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
                   <span>Beauty emerges when delight, performance, correctness, and simplicity converge.</span>
                 </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-foreground mb-3">Creative + Growth</h3>
-              <ul className="flex flex-col gap-3 text-base text-muted-foreground">
                 <li className="flex items-start gap-3">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
                   <span>Anchor every decision in fundamentals, then explore with intent and playfulness.</span>
