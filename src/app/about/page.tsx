@@ -109,23 +109,22 @@ export default function AboutPage() {
           </h2>
           <div className="flex flex-col gap-6 text-lg leading-relaxed text-muted-foreground">
             <p>
-              I’m a software engineer who cares deeply about building fast,
+              I'm a software engineer who cares deeply about building fast,
               thoughtful, and well-designed products. Over the past five years
-              I’ve worked across many layers of the stack, primarily focused on
+              I've worked across many layers of the stack, primarily focused on
               frontend systems, refining interactions, and making interfaces
               feel purposeful and responsive.
             </p>
             <p>
               I enjoy systems thinking just as much as product polish, whether
               that means improving reliability, smoothing out abstractions, or
-              tightening performance. I try to approach every project with
+              tightening performance. Every project is approached with
               intention and a high bar for quality, always looking for the small
               decisions that make a product feel cohesive.
             </p>
             <p>
-              Outside of work, you’ll usually find me exploring new coffee and
-              tea spots, chasing sunsets, listening to live music, or traveling
-              somewhere new.
+              Outside of work, I explore new coffee and tea spots, chase sunsets,
+              listen to live music, and travel.
             </p>
           </div>
 
@@ -133,21 +132,15 @@ export default function AboutPage() {
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">
             History
           </h2>
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4">
             {sortedHistory.map((item) => (
               <div
                 key={item.role + item.company}
-                className="flex justify-between items-start gap-4"
+                className="text-foreground leading-relaxed"
               >
-                <div className="flex flex-col">
-                  <span className="font-medium text-foreground">
-                    {item.role}
-                  </span>
-                  <span className="text-muted-foreground">{item.company}</span>
-                </div>
-                <span className="text-sm tabular-nums text-muted-foreground shrink-0 text-right">
-                  {formatDateRange(item.start, item.end)}
-                </span>
+                <span className="font-medium">{item.role}</span>
+                <span className="text-muted-foreground"> — {item.company}</span>
+                <span className="text-muted-foreground"> — {formatDateRange(item.start, item.end)}</span>
               </div>
             ))}
           </div>
@@ -175,56 +168,56 @@ export default function AboutPage() {
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">
             Values
           </h2>
-          <ul className="flex flex-col gap-3 text-base text-muted-foreground">
-            <li className="flex items-start gap-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-              <span>
-                Study fundamentals, experiment often with a playful attitude
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-              <span>Durable modular systems with swappable layers</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-              <span>
-                Tackle classes of problems not problems, avoid bandaid fixes and
-                stopgap solutions
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-              <span>
-                Static determinism through rules to reduce errors: knowledge
-                base, architecture docs, opinionated linters and formatters,
-                syntax rules, structural rules
-              </span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-              <span>
-                Beauty = delight + performance + correctness + simplicity
-              </span>
-            </li>
-          </ul>
+          <div className="flex flex-col gap-6">
+            <div>
+              <h3 className="text-sm font-medium text-foreground mb-3">Engineering Practice</h3>
+              <ul className="flex flex-col gap-3 text-base text-muted-foreground">
+                <li className="flex items-start gap-3">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
+                  <span>Design modular systems with swappable layers so evolution is a feature, not a rewrite.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
+                  <span>Treat incidents as manifestations of a broader class of problems; never ship band-aids.</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
+                  <span>Codify determinism: architecture docs, knowledge bases, opinionated linters, syntax + structural rules.</span>
+                </li>
+              </ul>
+            </div>
 
-          {/* Now */}
+            <div>
+              <h3 className="text-sm font-medium text-foreground mb-3">Design Philosophy</h3>
+              <ul className="flex flex-col gap-3 text-base text-muted-foreground">
+                <li className="flex items-start gap-3">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
+                  <span>Beauty emerges when delight, performance, correctness, and simplicity converge.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-medium text-foreground mb-3">Creative + Growth</h3>
+              <ul className="flex flex-col gap-3 text-base text-muted-foreground">
+                <li className="flex items-start gap-3">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
+                  <span>Anchor every decision in fundamentals, then explore with intent and playfulness.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Focus */}
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">
-            Now
+            Focus
           </h2>
           <div className="flex flex-col gap-6 text-lg leading-relaxed text-muted-foreground">
             <p>
-              Currently, I&apos;m focused on building end-to-end type-safe
-              systems and visual tools that lower the barrier to entry for
-              complex logic.
+              I lead Frontend at Formal, building a security-focused database reverse proxy that enforces zero-trust policies before a query ever touches customer data.
             </p>
             <p>
-              I&apos;m diving deep into **AST parsing** and **domain-specific
-              languages** to build better developer tools, as seen in my work on
-              the Visual Rego Editor. I&apos;m also exploring how to bridge the
-              gap between backend and frontend type systems more effectively
-              using tools like `proto-to-trpc`.
+              The product prevents data leakage and engineer compromise, manages secrets, and ships auditable analytics, proactive threat detection, streamlined access workflows, and enterprise-grade policy configuration. Every UI surface is a policy management tool that stays deeply integrated with the native cloud providers and tools our customers already trust.
             </p>
           </div>
         </div>
