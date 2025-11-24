@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/container";
 import { ExternalLink } from "@/components/external-link";
-import { getFeaturedMDXContent, type MDXFrontmatter } from "@/lib/mdx";
+import { getAllMDXContent, type MDXFrontmatter } from "@/lib/mdx";
 
 export const metadata: Metadata = {
   title: "Work | Faris Ashai",
@@ -13,7 +13,7 @@ function ProjectCard({ project }: { project: MDXFrontmatter }) {
   return (
     <Link
       key={project.slug}
-      href={`/work/${project.slug}`}
+      href={`/journal/${project.slug}`}
       className="group flex flex-col sm:flex-row sm:items-baseline justify-between py-6 border-t border-border first:border-t-0 hover:bg-secondary transition-none -mx-6 px-6"
     >
       <div className="flex flex-col gap-2 sm:gap-1">
@@ -24,7 +24,7 @@ function ProjectCard({ project }: { project: MDXFrontmatter }) {
           {project.description}
         </span>
         <span className="text-xs font-mono text-muted-foreground/70 mt-1">
-          {project.tech}
+          {project.keywords}
         </span>
       </div>
       <div className="hidden sm:flex flex-col items-end gap-1 mt-1">
@@ -37,7 +37,8 @@ function ProjectCard({ project }: { project: MDXFrontmatter }) {
 }
 
 export default async function WorkPage() {
-  const projects = await getFeaturedMDXContent();
+  const allProjects = await getAllMDXContent();
+  const projects = allProjects.filter((item) => item.featured === true);
 
   return (
     <Container className="flex-1 max-w-3xl">
@@ -47,7 +48,8 @@ export default async function WorkPage() {
             Featured Work
           </h1>
           <p className="text-muted-foreground text-lg">
-            Some interesting projects I&apos;ve built recently and problems I&apos;ve solved.
+            Some interesting projects I&apos;ve built recently and problems
+            I&apos;ve solved.
           </p>
         </div>
 

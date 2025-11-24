@@ -5,10 +5,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { Container } from "@/components/container";
-import { getFeaturedMDXContent, getMDXContent } from "@/lib/mdx";
+import { getAllMDXContent, getMDXContent } from "@/lib/mdx";
 
 export async function generateStaticParams() {
-  const projects = await getFeaturedMDXContent();
+  const allProjects = await getAllMDXContent();
+  const projects = allProjects.filter((item) => item.featured === true);
   return projects.map((project) => ({
     slug: project.slug,
   }));
@@ -61,7 +62,7 @@ export default async function ProjectPage({
             <div className="flex gap-4 text-sm text-muted-foreground font-mono uppercase tracking-wider">
               <span>{frontmatter.year}</span>
               <span>•</span>
-              <span>{frontmatter.category || frontmatter.tech}</span>
+              <span>{frontmatter.labels.join(", ")}</span>
             </div>
           </div>
 

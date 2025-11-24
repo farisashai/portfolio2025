@@ -16,7 +16,8 @@ export default function Home() {
 
         <div className="flex flex-col gap-8 max-w-xl">
           <p className="text-xl sm:text-2xl leading-relaxed sm:leading-relaxed text-foreground">
-          Building performant interfaces, resilient systems, and thoughtful user experiences.
+            Building performant interfaces, resilient systems, and thoughtful
+            user experiences.
           </p>
         </div>
 

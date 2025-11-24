@@ -1,16 +1,15 @@
 export const dynamic = "force-static";
 
-import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
+import { BackButton } from "@/components/back-button";
 import { Container } from "@/components/container";
 import { getAllMDXContent, getMDXContent } from "@/lib/mdx";
 
 export async function generateStaticParams() {
-  const entries = await getAllMDXContent();
-  return entries.map((entry) => ({
-    slug: entry.slug,
+  const articles = await getAllMDXContent();
+  return articles.map((article) => ({
+    slug: article.slug,
   }));
 }
 
@@ -28,12 +27,12 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: "Entry Not Found",
+      title: "Article Not Found",
     };
   }
 }
 
-export default async function JournalEntryPage({
+export default async function ArticlePage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -44,30 +43,24 @@ export default async function JournalEntryPage({
     const { content, frontmatter } = await getMDXContent(slug);
 
     return (
-      <Container className="max-w-2xl py-8 sm:py-12">
-        <Link
-          href="/journal"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-12"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Journal
-        </Link>
+      <Container className="max-w-3xl py-8 sm:py-12">
+        <BackButton />
 
-        <article className="flex flex-col gap-10">
-          <header className="flex flex-col gap-6">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <time dateTime={frontmatter.date}>{frontmatter.date}</time>
-              <span>•</span>
-              <span>{frontmatter.category}</span>
-            </div>
-            <h1 className="font-serif text-3xl sm:text-4xl font-medium italic tracking-tight text-foreground">
+        <article className="flex flex-col gap-8">
+          <div className="flex flex-col gap-4">
+            <h1 className="font-serif text-4xl font-medium italic tracking-tight">
               {frontmatter.title}
             </h1>
-          </header>
+            <div className="flex gap-4 text-sm text-muted-foreground font-mono uppercase tracking-wider">
+              <span>{frontmatter.year}</span>
+              <span>•</span>
+              <span>{frontmatter.labels.join(", ")}</span>
+            </div>
+          </div>
 
           <div
-            className="prose prose-neutral dark:prose-invert max-w-none leading-7 sm:leading-8 
-            prose-headings:font-medium prose-headings:text-foreground 
+            className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed
+            prose-headings:font-medium prose-headings:text-foreground
             prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground"
           >
             <MDXRemote source={content} />
@@ -77,8 +70,8 @@ export default async function JournalEntryPage({
     );
   } catch {
     return (
-      <Container className="max-w-2xl py-12 sm:py-24">
-        <p>Entry not found.</p>
+      <Container className="max-w-3xl py-12 sm:py-24">
+        <p>Article not found.</p>
       </Container>
     );
   }

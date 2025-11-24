@@ -21,7 +21,6 @@ interface ContentItem {
 }
 
 interface CommandMenuProps {
-  projects: ContentItem[];
   journal: ContentItem[];
 }
 

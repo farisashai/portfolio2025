@@ -7,7 +7,7 @@ import { Footer } from "@/components/footer";
 import { Nav } from "@/components/nav";
 import { PageTransition } from "@/components/page-transition";
 import { ThemeProvider } from "@/components/theme-provider";
-import { getAllMDXContent, getFeaturedMDXContent } from "@/lib/mdx";
+import { getAllMDXContent } from "@/lib/mdx";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,7 +38,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const projects = await getFeaturedMDXContent();
   const journal = await getAllMDXContent();
 
   return (
@@ -55,7 +54,6 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <CommandMenu
-            projects={projects.map((p) => ({ title: p.title, slug: p.slug }))}
             journal={journal.map((j) => ({ title: j.title, slug: j.slug }))}
           />
           <Nav />

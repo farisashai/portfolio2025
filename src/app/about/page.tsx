@@ -18,7 +18,7 @@ interface HistoryItem {
 // Note: Month is 0-indexed in JavaScript Date (0 = January, 1 = February, etc.)
 const history: HistoryItem[] = [
   {
-    role: "Head of Frontend",
+    role: "Software Engineer, Head of Frontend",
     company: "Formal",
     start: new Date(2025, 6), // July 2025
     end: undefined, // Now
@@ -107,7 +107,7 @@ export default function AboutPage() {
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">
             Identity
           </h2>
-          <div className="flex flex-col gap-6 text-lg leading-relaxed text-muted-foreground">
+          <div className="flex flex-col gap-6 text-base leading-relaxed text-muted-foreground">
             <p>
               I'm a software engineer who cares deeply about building fast,
               thoughtful, and well-designed products. Over the past five years
@@ -118,13 +118,13 @@ export default function AboutPage() {
             <p>
               I enjoy systems thinking just as much as product polish, whether
               that means improving reliability, smoothing out abstractions, or
-              tightening performance. Every project is approached with
-              intention and a high bar for quality, always looking for the small
-              decisions that make a product feel cohesive.
+              tightening performance. Every project is approached with intention
+              and a high bar for quality, always looking for the small decisions
+              that make a product feel cohesive.
             </p>
             <p>
-              Outside of work, I explore new coffee and tea spots, chase sunsets,
-              listen to live music, and travel.
+              Outside of work, I explore new coffee and tea spots, chase
+              sunsets, listen to live music, and travel.
             </p>
           </div>
 
@@ -140,7 +140,10 @@ export default function AboutPage() {
               >
                 <span className="font-medium">{item.role}</span>
                 <span className="text-muted-foreground"> — {item.company}</span>
-                <span className="text-muted-foreground"> — {formatDateRange(item.start, item.end)}</span>
+                <span className="text-muted-foreground">
+                  {" "}
+                  — {formatDateRange(item.start, item.end)}
+                </span>
               </div>
             ))}
           </div>
@@ -170,33 +173,52 @@ export default function AboutPage() {
           </h2>
           <div className="flex flex-col gap-6">
             <div>
-              <h3 className="text-sm font-medium text-foreground mb-3">Engineering Practice</h3>
+              <h3 className="text-sm font-medium text-foreground mb-3">
+                Engineering Practice
+              </h3>
               <ul className="flex flex-col gap-3 text-base text-muted-foreground">
                 <li className="flex items-start gap-3">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-                  <span>Design modular systems with swappable layers so evolution is a feature, not a rewrite.</span>
+                  <span>
+                    Design modular systems with swappable layers so evolution is
+                    a feature, not a rewrite.
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-                  <span>Treat incidents as manifestations of a broader class of problems; never ship band-aids.</span>
+                  <span>
+                    Treat incidents as manifestations of a broader class of
+                    problems; never ship band-aids.
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-                  <span>Codify determinism: architecture docs, knowledge bases, opinionated linters, syntax + structural rules.</span>
+                  <span>
+                    Codify determinism: architecture docs, knowledge bases,
+                    opinionated linters, syntax + structural rules.
+                  </span>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-foreground mb-3">Design Philosophy</h3>
+              <h3 className="text-sm font-medium text-foreground mb-3">
+                Design Philosophy
+              </h3>
               <ul className="flex flex-col gap-3 text-base text-muted-foreground">
                 <li className="flex items-start gap-3">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-                  <span>Beauty emerges when delight, performance, correctness, and simplicity converge.</span>
+                  <span>
+                    Beauty emerges when delight, performance, correctness, and
+                    simplicity converge.
+                  </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 mt-2.5 shrink-0"></span>
-                  <span>Anchor every decision in fundamentals, then explore with intent and playfulness.</span>
+                  <span>
+                    Anchor every decision in fundamentals, then explore with
+                    intent and playfulness.
+                  </span>
                 </li>
               </ul>
             </div>
@@ -206,12 +228,19 @@ export default function AboutPage() {
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mt-1.5">
             Focus
           </h2>
-          <div className="flex flex-col gap-6 text-lg leading-relaxed text-muted-foreground">
+          <div className="flex flex-col gap-6 text-base leading-relaxed text-muted-foreground">
             <p>
-              I lead Frontend at Formal, building a security-focused database reverse proxy that enforces zero-trust policies before a query ever touches customer data.
+              I lead Frontend at Formal, building a security-focused database
+              reverse proxy that enforces zero-trust policies before a query
+              ever touches customer data.
             </p>
             <p>
-              The product prevents data leakage and engineer compromise, manages secrets, and ships auditable analytics, proactive threat detection, streamlined access workflows, and enterprise-grade policy configuration. Every UI surface is a policy management tool that stays deeply integrated with the native cloud providers and tools our customers already trust.
+              The product prevents data leakage and engineer compromise, manages
+              secrets, and ships auditable analytics, proactive threat
+              detection, streamlined access workflows, and enterprise-grade
+              policy configuration. Every UI surface is a policy management tool
+              that stays deeply integrated with the native cloud providers and
+              tools our customers already trust.
             </p>
           </div>
         </div>

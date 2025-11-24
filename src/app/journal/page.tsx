@@ -2,7 +2,7 @@ import { Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/container";
-import { getJournalMDXContent } from "@/lib/mdx";
+import { getAllMDXContent } from "@/lib/mdx";
 
 export const metadata: Metadata = {
   title: "Journal | Faris Ashai",
@@ -10,7 +10,8 @@ export const metadata: Metadata = {
 };
 
 export default async function JournalPage() {
-  const entries = await getJournalMDXContent();
+  const allEntries = await getAllMDXContent();
+  const entries = allEntries.filter((item) => item.featured === false);
 
   return (
     <Container className="flex-1 max-w-3xl">
@@ -38,7 +39,7 @@ export default async function JournalPage() {
                     {entry.description}
                   </span>
                   <span className="text-xs font-mono text-muted-foreground/70 mt-1">
-                    {entry.category}
+                    {entry.labels.join(", ")}
                   </span>
                 </div>
                 <div className="hidden sm:flex flex-col items-end gap-1 mt-1">
