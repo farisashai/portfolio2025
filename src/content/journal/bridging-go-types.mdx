@@ -1,14 +1,12 @@
 ---
 title: "Bridging the Server Boundary from Go to TypeScript"
-description: "Eliminating the friction of maintaining frontend types for a gRPC Go backend."
+description: "Eliminating type drift between gRPC backends and TypeScript clients through shared schemas and generated bindings."
 year: "November 2025"
 keywords: "Go, TypeScript, Protobuf, tRPC"
 labels: ["Engineering"]
 featured: true
 draft: false
 ---
-
-> Eliminating the friction of maintaining frontend types for a gRPC Go backend.
 
 ## The Disconnect
 
@@ -20,11 +18,56 @@ We often found ourselves redefining types on the UI for consistency, manually in
 
 To solve this, I built `proto-to-trpc`, a tool designed to completely replace this disjointed workflow. It runs locally on a directory of `.proto` files and generates exact, type-safe ConnectRPC definitions that can be checked directly into the codebase.
 
-### Workflow Integration
+Type generation from Protocol Buffers isn't novel—tools like `protoc-gen-ts` have existed for years. The tRPC-compatible client generation wasn't particularly difficult either. The real innovation is in the **developer experience**: zero-config local execution that seamlessly handles first-party and third-party proto imports during generation.
 
-This tool flexibility supports two primary workflows:
-1.  **Monorepo:** Run it as part of the build process. Backend proto changes immediately update frontend types, causing build failures if breaking changes occur.
-2.  **Separate Repos:** Run it in a CI workflow and publish the generated artifacts to a private npm registry, providing a versioned, installable package for the frontend.
+Most proto tooling requires extensive configuration: mapping import paths, specifying plugin options, managing dependencies across repos. `proto-to-trpc` eliminates this friction. Point it at a directory, and it resolves the entire dependency graph—your internal protos, Google's well-known types, Buf registry imports—without manual intervention.
+
+This minimal abstraction layer and simple CLI design mean the tool fits into **any workflow**: file watchers, CI pipelines, pre-commit hooks, or manual builds. Because the generated code is committed to the repository (not hidden in `node_modules`), it participates in normal type checking. This is what enables CI to block breaking changes: the types are visible, versioned, and validated like any other source file.
+
+### Why Protocol Buffers Are the Ideal Foundation
+
+Protocol Buffers aren't just convenient—they're the **lingua franca of typed, cross-language communication**. Unlike OpenAPI specs (which describe HTTP endpoints, not data structures), arbitrary JSON schemas (which lack semantic precision), or language-specific formats (which don't transfer across ecosystems), `.proto` files provide unambiguous, strongly-typed schemas with stable evolution guarantees. Every major language has first-class proto support, and the ecosystem spans far beyond gRPC: Kafka schemas, Pub/Sub messages, Google Cloud APIs, mobile clients, and internal microservices at nearly every major company.
+
+By building on `.proto`, the tool instantly becomes useful anywhere Protocol Buffers exist—not just Go backends or gRPC services. Rust + TypeScript? Java + React Native? Python + Next.js? If the backend publishes a `.proto`, the tool can generate type-safe clients for it. This universality is what makes proto the perfect input: it's already the industry standard for structured data and RPC interfaces, and a type generator that consumes it plugs into the entire modern distributed systems landscape.
+
+The stability guarantees are equally important. Protobuf's field numbering and wire format ensure backward compatibility—adding fields is safe, renaming preserves compatibility, and unknown fields round-trip cleanly. For a type generator, this means types evolve predictably without breaking existing code. OpenAPI specs lack this rigor, JSON schemas drift silently, and language-specific formats can't cross boundaries. Protocol Buffers provide the precision, portability, and stability required for production-grade type generation at scale.
+
+### Extending tRPC's Type Safety Across Language Boundaries
+
+The power of tRPC is that it provides end-to-end type safety from backend to frontend—but only when both are written in TypeScript. With `proto-to-trpc`, we can achieve the same guarantees between **any RPC backend** (Go, Rust, Java, etc.) and a TypeScript frontend by treating Protocol Buffers as the shared contract.
+
+This unlocks two critical workflows that parallel native tRPC's developer experience:
+
+#### 1. Monorepo: Watch Mode with Pre-Commit Type Safety
+
+Run `proto-to-trpc --watch` to continuously monitor your `.proto` files. When the backend team modifies an API schema:
+
+1. The tool instantly regenerates TypeScript definitions
+2. Since these files are **committed to the codebase** (not buried in `node_modules`), they're type-checked like any other source file
+3. Breaking changes in the backend API immediately surface as TypeScript errors across the frontend
+4. **The backend commit is blocked** until the frontend is updated to match
+
+This is the same guarantee you get with native tRPC in a TypeScript monorepo, but now it works across language boundaries. Backend engineers can't ship breaking API changes without the frontend explicitly handling them first.
+
+#### 2. Separate Repos: CI-Driven Validation
+
+When your frontend and backend live in separate repositories, you can enforce synchronization through CI:
+
+**Option A: Backend CI Validates Frontend**
+- On every backend commit, a CI job clones the frontend repo
+- Runs `proto-to-trpc` to regenerate types from the updated protos
+- Executes the frontend's type checking (`tsc --noEmit`) and tests
+- **Fails the backend CI** if the frontend would break
+
+This ensures breaking changes can't be merged without coordination.
+
+**Option B: Automated Frontend PRs**
+- Backend CI runs `proto-to-trpc` and opens a pull request in the frontend repo with the updated types
+- Frontend CI runs on that PR to validate compatibility
+- If tests pass, the PR can be merged alongside the backend deployment
+- If tests fail, the frontend team is immediately notified of the breaking change
+
+Both approaches guarantee that type drift is impossible. The backend and frontend can't diverge because the build process enforces synchronization.
 
 ## End-to-End Type Safety
 
@@ -44,4 +87,21 @@ const { data } = api.userService.getUser.useQuery({ id: "123" });
 -   **Inferred Operations:** The tool intelligently infers whether an RPC should be a `useQuery` or `useMutation` based on the RPC verb standard (e.g., `Get` vs `Update`), integrating seamlessly with **TanStack Query**.
 -   **Zero Config Imports:** It handles first-party and third-party proto imports internally, meaning you don't need complex mapping configurations to get started.
 -   **Extensibility:** The generated client includes a clear pass-through layer, allowing you to overwrite or extend specific behaviors without ejecting from the generated code.
+
+## Focus on Using Your Data, Not Getting It
+
+The best abstractions make complexity disappear. With `proto-to-trpc`, frontend engineers stop thinking about:
+
+- Network transport layers and RPC protocols
+- Request serialization and response deserialization
+- Type casting and runtime validation
+- API endpoint URLs and HTTP methods
+- Error handling boilerplate
+- Loading and caching state management
+
+All of that vanishes behind a type-safe interface. You write `api.userService.getUser.useQuery()` and get back fully typed data with automatic loading states, error handling, and cache management through TanStack Query.
+
+This shifts mental focus from **how you get your data** to **how you use your data**. Instead of debugging shape mismatches or writing fetch wrappers, you're building features. The generated client handles the boundary crossing automatically—your backend schema is the source of truth, and the frontend just consumes it.
+
+This is the promise of end-to-end type safety: eliminating entire categories of bugs and letting developers focus on the problems that actually matter to users.
 

@@ -27,7 +27,7 @@ export default function Home() {
               href="/work"
               className="underline underline-offset-4 decoration-border hover:decoration-foreground transition-colors"
             >
-              View Work
+              Explore Work
             </Link>
             <Link
               href="/about"

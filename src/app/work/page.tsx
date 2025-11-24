@@ -60,14 +60,14 @@ export default async function WorkPage() {
         </div>
 
         <div className="flex flex-col gap-4 mt-4 pt-8 border-t border-border">
-          <p className="text-muted-foreground flex flex-wrap gap-2 items-center">
+          <p className="text-muted-foreground">
             See all of my past projects on{" "}
             <ExternalLink
               href="https://github.com/farisashai"
               className="text-foreground"
             >
               GitHub
-            </ExternalLink>
+            </ExternalLink>{" "}
             and{" "}
             <ExternalLink
               href="https://devpost.com/farisashai"

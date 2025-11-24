@@ -15,7 +15,7 @@ export type MDXFrontmatter = {
   slug: string;
 };
 
-const SUPPORTED_LABELS = ["Engineering", "Other"] as const;
+const SUPPORTED_LABELS = ["Engineering", "Design", "Projects", "Learnings", "Reading", "Other"] as const;
 
 const REQUIRED_FIELDS = ["title", "description", "year", "keywords", "labels"];
 const OPTIONAL_FIELDS = ["featured", "draft"];

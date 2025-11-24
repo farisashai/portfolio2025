@@ -61,8 +61,12 @@ export default async function ArticlePage({
           <div
             className="prose prose-neutral dark:prose-invert max-w-none leading-relaxed
             prose-headings:font-medium prose-headings:text-foreground
-            prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground"
+            prose-p:text-muted-foreground prose-strong:text-foreground prose-li:text-muted-foreground
+            prose-code:text-foreground prose-code:font-semibold prose-code:before:content-none prose-code:after:content-none"
           >
+            <blockquote>
+              <p>{frontmatter.description}</p>
+            </blockquote>
             <MDXRemote source={content} />
           </div>
         </article>
