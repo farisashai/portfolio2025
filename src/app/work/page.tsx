@@ -2,40 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/container";
 import { ExternalLink } from "@/components/external-link";
+import { getFeaturedMDXContent, type MDXFrontmatter } from "@/lib/mdx";
 
 export const metadata: Metadata = {
   title: "Work | Faris Ashai",
   description: "Selected engineering projects and case studies.",
 };
 
-interface Project {
-  name: string;
-  description: string;
-  tech: string;
-  year: string;
-  slug: string;
-}
-
-const projects: Project[] = [
-  {
-    name: "Designing a Visual Code Editor",
-    description:
-      "Interactive editor for policy-as-code with real-time validation.",
-    tech: "React, TypeScript, Monaco Editor",
-    year: "October 2025",
-    slug: "visual-rego-editor",
-  },
-  {
-    name: "Bridging the Server Boundary from Go to TypeScript",
-    description:
-      "Generating end-to-end type-safe tRPC clients from Protocol Buffers.",
-    tech: "Go, TypeScript, Protobuf, tRPC",
-    year: "November 2025",
-    slug: "bridging-go-to-typescript",
-  },
-];
-
-function ProjectCard({ project }: { project: Project }) {
+function ProjectCard({ project }: { project: MDXFrontmatter }) {
   return (
     <Link
       key={project.slug}
@@ -44,7 +18,7 @@ function ProjectCard({ project }: { project: Project }) {
     >
       <div className="flex flex-col gap-2 sm:gap-1">
         <span className="text-lg font-medium text-foreground group-hover:underline underline-offset-4 decoration-1">
-          {project.name}
+          {project.title}
         </span>
         <span className="text-muted-foreground max-w-md leading-relaxed">
           {project.description}
@@ -62,7 +36,9 @@ function ProjectCard({ project }: { project: Project }) {
   );
 }
 
-export default function WorkPage() {
+export default async function WorkPage() {
+  const projects = await getFeaturedMDXContent();
+
   return (
     <Container className="flex-1 max-w-3xl">
       <div className="flex flex-col gap-12 py-8 sm:py-12">
@@ -71,8 +47,7 @@ export default function WorkPage() {
             Featured Work
           </h1>
           <p className="text-muted-foreground text-lg">
-            A collection of projects I&apos;ve built and problems I&apos;ve
-            solved.
+            Some interesting projects I&apos;ve built recently and problems I&apos;ve solved.
           </p>
         </div>
 
@@ -84,7 +59,7 @@ export default function WorkPage() {
 
         <div className="flex flex-col gap-4 mt-4 pt-8 border-t border-border">
           <p className="text-muted-foreground flex flex-wrap gap-2 items-center">
-            See more on{" "}
+            See all of my past projects on{" "}
             <ExternalLink
               href="https://github.com/farisashai"
               className="text-foreground"

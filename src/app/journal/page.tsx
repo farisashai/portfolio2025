@@ -2,22 +2,16 @@ import { Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/container";
+import { getJournalMDXContent } from "@/lib/mdx";
 
 export const metadata: Metadata = {
   title: "Journal | Faris Ashai",
   description: "Thoughts on engineering, design, and creative pursuits.",
 };
 
-interface Entry {
-  title: string;
-  date: string;
-  category: string;
-  slug: string;
-}
+export default async function JournalPage() {
+  const entries = await getJournalMDXContent();
 
-const entries: Entry[] = [];
-
-export default function JournalPage() {
   return (
     <Container className="flex-1 max-w-3xl">
       <div className="flex flex-col gap-12 py-8 sm:py-12">
@@ -34,19 +28,24 @@ export default function JournalPage() {
               <Link
                 key={entry.slug}
                 href={`/journal/${entry.slug}`}
-                className="group flex items-center justify-between py-4 border-b border-border last:border-0 hover:bg-transparent"
+                className="group flex flex-col sm:flex-row sm:items-baseline justify-between py-6 border-t border-border first:border-t-0 hover:bg-secondary transition-none -mx-6 px-6"
               >
-                <div className="flex flex-col gap-1">
-                  <h2 className="text-lg font-medium text-foreground group-hover:text-muted-foreground transition-colors">
+                <div className="flex flex-col gap-2 sm:gap-1">
+                  <span className="text-lg font-medium text-foreground group-hover:underline underline-offset-4 decoration-1">
                     {entry.title}
-                  </h2>
-                  <span className="text-sm text-muted-foreground">
+                  </span>
+                  <span className="text-muted-foreground max-w-md leading-relaxed">
+                    {entry.description}
+                  </span>
+                  <span className="text-xs font-mono text-muted-foreground/70 mt-1">
                     {entry.category}
                   </span>
                 </div>
-                <span className="text-sm text-muted-foreground tabular-nums font-mono">
-                  {entry.date}
-                </span>
+                <div className="hidden sm:flex flex-col items-end gap-1 mt-1">
+                  <span className="text-sm text-muted-foreground font-mono tabular-nums">
+                    {entry.year}
+                  </span>
+                </div>
               </Link>
             ))
           ) : (

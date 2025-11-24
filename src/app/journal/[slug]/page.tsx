@@ -8,7 +8,7 @@ import { Container } from "@/components/container";
 import { getAllMDXContent, getMDXContent } from "@/lib/mdx";
 
 export async function generateStaticParams() {
-  const entries = await getAllMDXContent("journal");
+  const entries = await getAllMDXContent();
   return entries.map((entry) => ({
     slug: entry.slug,
   }));
@@ -21,7 +21,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const slug = (await params).slug;
   try {
-    const { frontmatter } = await getMDXContent("journal", slug);
+    const { frontmatter } = await getMDXContent(slug);
     return {
       title: `${frontmatter.title} | Faris Ashai`,
       description: frontmatter.description,
@@ -41,7 +41,7 @@ export default async function JournalEntryPage({
   const slug = (await params).slug;
 
   try {
-    const { content, frontmatter } = await getMDXContent("journal", slug);
+    const { content, frontmatter } = await getMDXContent(slug);
 
     return (
       <Container className="max-w-2xl py-8 sm:py-12">

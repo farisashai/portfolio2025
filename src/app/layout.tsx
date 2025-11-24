@@ -7,7 +7,7 @@ import { Footer } from "@/components/footer";
 import { Nav } from "@/components/nav";
 import { PageTransition } from "@/components/page-transition";
 import { ThemeProvider } from "@/components/theme-provider";
-import { getAllMDXContent } from "@/lib/mdx";
+import { getAllMDXContent, getFeaturedMDXContent } from "@/lib/mdx";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -38,8 +38,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const projects = await getAllMDXContent("work");
-  const journal = await getAllMDXContent("journal");
+  const projects = await getFeaturedMDXContent();
+  const journal = await getAllMDXContent();
 
   return (
     <html

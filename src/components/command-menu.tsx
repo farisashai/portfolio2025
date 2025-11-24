@@ -1,28 +1,18 @@
 "use client";
 
-import * as DialogPrimitive from "@radix-ui/react-dialog";
+import * as Dialog from "@radix-ui/react-dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Command } from "cmdk";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowRight,
-  CornerDownRight,
-  FileText,
-  FlaskConical,
-  Hash,
-  Layout,
-  Search,
-} from "lucide-react";
+import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { cn } from "@/lib/utils";
 
 const pages = [
-  { name: "Home", href: "/", icon: Layout },
-  { name: "Work", href: "/work", icon: Layout },
-  // { name: "Experiments", href: "/experiments", icon: FlaskConical },
-  { name: "About", href: "/about", icon: Layout },
-  { name: "Journal", href: "/journal", icon: FileText },
+  { name: "Home", href: "/" },
+  { name: "Work", href: "/work" },
+  { name: "About", href: "/about" },
+  { name: "Journal", href: "/journal" },
 ];
 
 interface ContentItem {
@@ -35,7 +25,7 @@ interface CommandMenuProps {
   journal: ContentItem[];
 }
 
-export function CommandMenu({ projects, journal }: CommandMenuProps) {
+export function CommandMenu({ journal }: CommandMenuProps) {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
 
@@ -62,123 +52,80 @@ export function CommandMenu({ projects, journal }: CommandMenuProps) {
         <Command.Dialog
           open={open}
           onOpenChange={setOpen}
-          label="Global Command Menu"
-          className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh] sm:pt-[25vh] px-4"
+          label="Command Menu"
+          className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh] px-4"
         >
-          {/* Overlay with blur */}
+          <VisuallyHidden>
+            <Dialog.Title>Command Menu</Dialog.Title>
+          </VisuallyHidden>
+
+          {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm"
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 bg-black/50 dark:bg-black/70"
             onClick={() => setOpen(false)}
           />
 
           {/* Dialog Content */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.98, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98, y: 10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="relative w-full max-w-xl overflow-hidden rounded-xl border border-border bg-background shadow-2xl ring-1 ring-black/5 dark:ring-white/10"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.15 }}
+            className="relative w-full max-w-xl overflow-hidden rounded-md border border-border bg-background shadow-2xl"
           >
-            {/* Accessible Title for Screen Readers */}
-            <DialogPrimitive.Title className="sr-only">
-              Global Command Menu
-            </DialogPrimitive.Title>
-
-            <div
-              className="flex items-center border-b border-border px-4 py-2 sm:py-0"
-              cmdk-input-wrapper=""
-            >
-              <Search className="w-5 h-5 text-muted-foreground mr-3" />
+            {/* Search Input */}
+            <div className="flex items-center border-b border-border px-3">
+              <Search className="w-4 h-4 text-muted-foreground mr-2" />
               <Command.Input
                 placeholder="Search..."
                 autoFocus
-                className="flex h-12 sm:h-14 w-full rounded-md bg-transparent py-3 text-base outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 font-sans"
+                className="flex h-11 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
               />
-              <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-secondary px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-                <span className="text-xs">ESC</span>
-              </kbd>
             </div>
 
-            <Command.List className="max-h-[360px] overflow-y-auto overflow-x-hidden py-2 px-2 scroll-py-2">
-              <Command.Empty className="py-12 text-center text-sm text-muted-foreground flex flex-col items-center gap-2">
-                <span>No results found.</span>
+            {/* Results List */}
+            <Command.List className="max-h-[400px] overflow-y-auto p-2">
+              <Command.Empty className="py-8 text-center text-sm text-muted-foreground">
+                No results found.
               </Command.Empty>
 
-              <Command.Group
-                heading="Pages"
-                className="px-2 py-1.5 text-[10px] tracking-wider font-semibold text-muted-foreground/70 mb-1"
-              >
-                {pages.map((page) => {
-                  const pageKeywords =
-                    page.name === "Work"
-                      ? projects.map((p) => p.title)
-                      : page.name === "Journal"
-                        ? journal.map((j) => j.title)
-                        : undefined;
-
-                  return (
-                    <React.Fragment key={page.href}>
-                      <Command.Item
-                        onSelect={() =>
-                          runCommand(() => router.push(page.href))
-                        }
-                        keywords={pageKeywords}
-                        className="group flex items-center px-3 py-3 text-sm text-foreground rounded-lg cursor-pointer aria-selected:bg-secondary aria-selected:text-secondary-foreground transition-colors"
-                      >
-                        <div className="flex items-center justify-center w-8 h-8 rounded-md bg-secondary/50 mr-3 border border-border/50 group-aria-selected:bg-background group-aria-selected:border-border group-aria-selected:shadow-sm">
-                          <page.icon className="w-4 h-4 text-muted-foreground group-aria-selected:text-foreground transition-colors" />
-                        </div>
-                        <span className="font-medium">{page.name}</span>
-                        <ArrowRight className="w-4 h-4 ml-auto text-muted-foreground/0 group-aria-selected:text-muted-foreground/50 transition-all -translate-x-2 group-aria-selected:translate-x-0" />
-                      </Command.Item>
-
-                      {page.name === "Work" && projects.length > 0 && (
-                        <div className="flex flex-col gap-0.5 ml-4 pl-4 border-l border-border/50 my-1">
-                          {projects.map((project) => (
-                            <Command.Item
-                              key={project.slug}
-                              value={project.title}
-                              onSelect={() =>
-                                runCommand(() =>
-                                  router.push(`/work/${project.slug}`),
-                                )
-                              }
-                              className="group flex items-center px-2 py-2 text-sm text-muted-foreground rounded-md cursor-pointer aria-selected:bg-secondary aria-selected:text-foreground transition-colors"
-                            >
-                              <CornerDownRight className="w-3 h-3 mr-2 text-muted-foreground/50" />
-                              <span className="truncate">{project.title}</span>
-                            </Command.Item>
-                          ))}
-                        </div>
-                      )}
-
-                      {page.name === "Journal" && journal.length > 0 && (
-                        <div className="flex flex-col gap-0.5 ml-4 pl-4 border-l border-border/50 my-1">
-                          {journal.map((post) => (
-                            <Command.Item
-                              key={post.slug}
-                              value={post.title}
-                              onSelect={() =>
-                                runCommand(() =>
-                                  router.push(`/journal/${post.slug}`),
-                                )
-                              }
-                              className="group flex items-center px-2 py-2 text-sm text-muted-foreground rounded-md cursor-pointer aria-selected:bg-secondary aria-selected:text-foreground transition-colors"
-                            >
-                              <CornerDownRight className="w-3 h-3 mr-2 text-muted-foreground/50" />
-                              <span className="truncate">{post.title}</span>
-                            </Command.Item>
-                          ))}
-                        </div>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
+              <Command.Group>
+                {pages.map((page) => (
+                  <Command.Item
+                    key={page.href}
+                    onSelect={() => runCommand(() => router.push(page.href))}
+                    className="flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer aria-selected:bg-secondary/80 text-foreground transition-colors mb-0.5"
+                  >
+                    <span>{page.name}</span>
+                  </Command.Item>
+                ))}
               </Command.Group>
+
+              {journal.length > 0 && (
+                <>
+                  <div className="h-px bg-border my-2" />
+                  <Command.Group>
+                    {journal.map((article) => (
+                      <Command.Item
+                        key={article.slug}
+                        value={article.title}
+                        onSelect={() =>
+                          runCommand(() =>
+                            router.push(`/journal/${article.slug}`),
+                          )
+                        }
+                        className="flex items-center px-2 py-1.5 text-sm rounded-sm cursor-pointer aria-selected:bg-secondary/80 text-muted-foreground aria-selected:text-foreground transition-colors mb-0.5"
+                      >
+                        <span className="truncate">{article.title}</span>
+                      </Command.Item>
+                    ))}
+                  </Command.Group>
+                </>
+              )}
             </Command.List>
           </motion.div>
         </Command.Dialog>

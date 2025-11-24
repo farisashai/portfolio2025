@@ -16,12 +16,8 @@ export default function Home() {
 
         <div className="flex flex-col gap-8 max-w-xl">
           <p className="text-xl sm:text-2xl leading-relaxed sm:leading-relaxed text-foreground">
-            Building thoughtful software at scale with a focus on UI systems,
-            interaction design, and product reliability.
+          Building performant interfaces, resilient systems, and thoughtful user experiences.
           </p>
-          {/* <p className="text-lg text-muted-foreground leading-relaxed">
-            I value clarity, craft, and engineering that feels inevitable.
-          </p> */}
         </div>
 
         <div className="flex flex-col gap-6">
@@ -54,6 +50,28 @@ export default function Home() {
             className="hover:text-foreground transition-colors"
           >
             Email
+          </a>
+        </div>
+
+        {/* Inspired By */}
+        <div className="text-sm text-muted-foreground/60 mt-6">
+          Inspired by{" "}
+          <a
+            href="https://emilkowal.ski/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            @Emil Kowalski
+          </a>{" "}
+          and{" "}
+          <a
+            href="https://paco.me/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-foreground transition-colors"
+          >
+            @Paco Coursey
           </a>
         </div>
       </div>

@@ -5,10 +5,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { Container } from "@/components/container";
-import { getAllMDXContent, getMDXContent } from "@/lib/mdx";
+import { getFeaturedMDXContent, getMDXContent } from "@/lib/mdx";
 
 export async function generateStaticParams() {
-  const projects = await getAllMDXContent("work");
+  const projects = await getFeaturedMDXContent();
   return projects.map((project) => ({
     slug: project.slug,
   }));
@@ -21,7 +21,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const slug = (await params).slug;
   try {
-    const { frontmatter } = await getMDXContent("work", slug);
+    const { frontmatter } = await getMDXContent(slug);
     return {
       title: `${frontmatter.title} | Faris Ashai`,
       description: frontmatter.description,
@@ -41,7 +41,7 @@ export default async function ProjectPage({
   const slug = (await params).slug;
 
   try {
-    const { content, frontmatter } = await getMDXContent("work", slug);
+    const { content, frontmatter } = await getMDXContent(slug);
 
     return (
       <Container className="max-w-3xl py-8 sm:py-12">
