@@ -1,0 +1,648 @@
+---
+title: "Where is the Latency?"
+description: "A deep dive into the request/response lifecycle, investigating footguns that can inadvertently double your latency, tradeoffs to consider, and what decisions actually make sense."
+year: "November 2025"
+keywords: "latency, performance, TCP, TLS, HTTP, DNS, browser, REST API, web performance, VPC, region, GraphQL, gRPC"
+labels: ["Engineering", "Learnings"]
+featured: false
+draft: true
+---
+
+## The Deceptive Simplicity of `fetch()`
+
+When you write `fetch('https://api.example.com/users')` in your browser, it looks instantaneous in code. But behind that single line lies a cascade of network operations, each contributing latency. Understanding where time is spent—and where it's wasted—is the difference between a snappy application and one that feels sluggish.
+
+This post walks through the full request/response lifecycle from "user taps a button" to "UI updated," breaking down each phase with concrete numbers and identifying common footguns that can **double your latency or worse**.
+
+Let's anchor this in reality first: what latency should you actually expect?
+
+## Baseline: Latency Within Your Infrastructure
+
+Before we dive into browser-to-API calls, let's establish realistic expectations for latency within AWS/GCP/Azure infrastructure. These are rough ballparks, but the orders of magnitude are what matter.
+
+### Same Machine / Same Pod
+- **Same process/container**: Effectively **0 ms** from a network perspective
+- **Same node via loopback** (`localhost`): Well under **0.1 ms**
+
+You won't optimize this further for typical web workloads.
+
+### Same AZ, Same VPC
+- **App server → DB in same AZ**: Usually **0.1–0.5 ms** network latency
+- **P99**: Typically under **1–2 ms**
+
+For web/API apps, this is effectively "free" compared to TLS handshakes, app logic, or the DB query time itself.
+
+### Cross-AZ, Same Region
+- **App in us-east-1a, DB in us-east-1c**: Around **1–2 ms** network hop
+- **Worst case**: **3–5 ms**
+
+Still small, but multiple cross-AZ hops per request can stack up.
+
+### Cross-Region
+- **us-east-1 ↔ us-west-2**: ~**60–80 ms** RTT
+- **us-east-1 ↔ EU**: ~**70–120 ms** RTT
+
+**This is where your latency budget gets killed if you're careless.**
+
+### Is Further Optimization Worth It?
+
+Once services and databases are in the same region (ideally same AZ), optimizing raw network latency further is almost never your first-order problem. You get far bigger wins by:
+
+- Avoiding cross-region anything
+- Cutting down handshakes
+- Fixing DB/query behavior
+- Avoiding synchronous third-party calls
+
+You only obsess about placement groups, kernel tuning, or shaving microseconds if you're doing HFT, real-time audio/video at scale, or very high QPS low-latency trading/streaming systems.
+
+## The Complete Request Lifecycle
+
+Let's trace what actually happens when a user clicks a button and your browser executes `fetch()`:
+
+```
+User clicks button → JS scheduling → DNS lookup → TCP handshake → TLS handshake →
+HTTP request → Edge/CDN → App server → DB/services → Observability →
+HTTP response → Browser decompression → JSON parsing → React render
+```
+
+Each step can add milliseconds—or hundreds of milliseconds if misconfigured.
+
+### Phase 1: DNS Resolution (5-50ms typical, 100ms+ worst case)
+
+Before your browser can connect to `api.example.com`, it must resolve that domain to an IP address.
+
+**What happens:**
+- Browser checks its DNS cache (cache hit ≈ 0 ms)
+- If miss, queries OS DNS cache
+- If miss, queries configured DNS resolver (usually ISP or 1.1.1.1/8.8.8.8)
+- Resolver may need to walk the DNS hierarchy: root → TLD → authoritative
+
+**Problem: Too many hostnames**
+
+Your frontend calls `api1.example.com`, `billing.example.com`, `realtime.example.com`, etc. Each hostname can require its own DNS lookup, TCP+TLS handshake, and connection pool.
+
+**Simple fix:**
+- Use **one primary API hostname** per app (e.g., `api.example.com`) unless you have a concrete reason not to
+- Keep static assets on one or two well-known domains (`cdn.example.com`)
+- Let internal services use service discovery inside the VPC—this is about browser-facing hostnames
+
+**What to expect:**
+- DNS will be resolved once and cached (subject to TTL)
+- TLS sessions will be reused
+- Avoid 1-2 extra RTTs per new hostname: saves **tens to hundreds of ms** on first page load
+
+**Additional optimizations:**
+- Use `<link rel="dns-prefetch" href="//api.example.com">` for known endpoints
+- Set reasonable TTLs (1 hour minimum for production APIs)
+- Use a fast DNS provider (Cloudflare's 1.1.1.1 typically beats ISP resolvers by 20-50ms)
+
+### Phase 2: TCP Handshake (1 RTT)
+
+Once DNS resolves, your browser establishes a TCP connection via the three-way handshake:
+
+```
+Client → SYN → Server
+Client ← SYN-ACK ← Server
+Client → ACK → Server
+```
+
+This takes **one full round-trip time (RTT)**:
+- NYC to us-east-1: **10–20 ms**
+- NYC to us-west-2: **60–80 ms**
+- NYC to EU: **100–150 ms**
+
+**Problem: Not reusing TCP/TLS connections (keep-alive disabled or misused)**
+
+Each HTTP request opens a new connection: TCP handshake (1 RTT) + TLS handshake (1 RTT). You effectively add **2 RTTs** to every call.
+
+**Simple fix:**
+- Ensure **HTTP keep-alive** is enabled on your reverse proxy (NGINX/Envoy/API gateway) and app server
+- Prefer **HTTP/2 or HTTP/3** between client ↔ edge and edge ↔ services—they multiplex multiple requests over one connection
+
+**What to expect:**
+- For warm traffic, per-request network overhead drops from ~3 RTTs to ~1 RTT
+- In us-east-1, that's going from **30–60 ms to 10–20 ms** of pure network cost
+- This very often cuts **20–40+ ms** off typical app calls
+
+**Additional optimizations:**
+- Use `<link rel="preconnect" href="https://api.example.com">` to establish TCP+TLS before the first request
+- For global audiences, use a CDN or edge network to terminate connections near users
+
+### Phase 3: TLS Handshake (1-2 RTT)
+
+HTTPS requires TLS negotiation on top of TCP. With **TLS 1.3**, this takes **one additional RTT**. With older **TLS 1.2**, it takes **two RTTs**.
+
+**TLS 1.3 handshake (1 RTT):**
+```
+Client → ClientHello → Server
+Client ← ServerHello + Certificate + Finished ← Server
+Client → Finished → Server
+```
+
+**TLS 1.2 handshake (2 RTT, deprecated but still common):**
+```
+Client → ClientHello → Server
+Client ← ServerHello + Certificate ← Server
+Client → KeyExchange + Finished → Server
+Client ← Finished ← Server
+```
+
+For NYC to us-west-2 (75ms RTT):
+- TLS 1.3: **+75ms**
+- TLS 1.2: **+150ms**
+
+**Problem: Still using TLS 1.2 or no session resumption**
+
+Without TLS 1.3 and session resumption, you pay the full handshake cost on every new connection.
+
+**Simple fix:**
+- **Enforce TLS 1.3** minimum (disable TLS 1.2 if possible)
+- Enable **session resumption** and **0-RTT** where supported
+- Use **ECDSA certificates** (smaller than RSA)
+- Enable **OCSP stapling** to include certificate validity in the handshake
+
+**What to expect:**
+- Upgrading from TLS 1.2 to 1.3 saves **one full RTT** (50-150ms depending on distance)
+- Session resumption can make subsequent connections effectively "free" after the first
+- Combined with keep-alive, you might only pay TLS cost once per user session
+
+### Phase 4: HTTP Headers and Request Size
+
+Now the browser can finally send the HTTP request:
+
+```http
+GET /api/users HTTP/2
+Host: api.example.com
+User-Agent: Mozilla/5.0...
+Accept: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJh...
+Cookie: session=abc123; tracking=xyz789; ...
+```
+
+The request must travel to the server (half an RTT one-way).
+
+**When do headers matter?**
+
+On a decent connection (10 Mbps):
+- 1 KB ≈ **0.8 ms** transmission time
+- 10 KB ≈ **8 ms**
+
+On a bad mobile connection (1 Mbps):
+- 1 KB ≈ **8 ms**
+- 10 KB ≈ **80 ms**
+
+**Rough rule of thumb:**
+- Below **2–4 KB** header size, you don't care about their bytes—you care more about extra round trips (redirects, auth challenges)
+- Above **8–16 KB** per request, especially for high QPS or mobile users, audit for:
+  - Cookie bloat (mega JWTs)
+  - Excess headers (per-request tracing baggage, verbose custom headers)
+
+**Size reference:**
+- Minimal request: ~200 bytes
+- Typical request with auth: ~800 bytes
+- Bloated request with large cookies: 2-4KB
+
+**Simple fix:**
+- Keep cookies small (use session IDs, not full JWT tokens in cookies)
+- Store large auth tokens in memory or localStorage
+- Use **HTTP/2 header compression (HPACK)** or **HTTP/3 QPACK**
+- Remove unnecessary custom headers (excessive tracing baggage)
+
+### Phase 5: Server-Side Architecture and Processing
+
+This is where backend architecture decisions can easily add **50–300+ ms**—or more—if you're not careful.
+
+#### Typical Modern Setup
+
+Imagine:
+- User in NYC
+- Edge (CDN / Next.js middleware) in us-east-1
+- App server in us-east-1
+- DB in same region
+- Datadog / logging agent → local agent → region ingestion
+- Third-party APIs: Stripe, fraud detection, etc.
+
+**Ideal path:**
+1. Browser → Edge (same region, cached DNS, reused connection)
+2. Edge → App in same region (sub-ms LAN latency)
+3. App → DB in same AZ (0.1–0.5 ms)
+4. Observability: local agent, batched, async
+5. App → Edge → Browser
+
+Total network cost is dominated by user ↔ region RTT (~20–40 ms) plus server processing.
+
+#### Problem 1: Cross-Region Calls (or DB in the wrong place)
+
+**The pattern:**
+- Next.js app in us-east-1
+- DB or critical microservice in us-west-2 or EU
+- Every request crosses regions one or more times
+
+**Simple fix:**
+- Put **user-facing app servers and their primary DB in the same region, ideally same AZ** for the hot path
+- If you need global users, use **edge routing** to send them to the nearest region containing the app and DB
+- Or use read replicas for read-heavy workloads (but be careful about writes)
+
+**What to expect:**
+- Fixing cross-region mistakes often recovers **50–150 ms per cross-region hop**
+- This is usually one of the biggest "oh wow" reductions when people move a DB into the same region as the app
+
+#### Problem 2: Sequential Work Instead of Parallel
+
+**The pattern:**
+
+In your API handler:
+```ts
+const user = await db.getUser(id)       // 20 ms
+const orders = await db.getOrders(id)   // 20 ms
+const recs = await getRecommendations() // 40 ms
+return { user, orders, recs }
+```
+
+Total: ~80+ ms of serialized I/O.
+
+**Simple fix:**
+
+Run independent operations **in parallel**:
+```ts
+const [user, orders, recs] = await Promise.all([
+  db.getUser(id),
+  db.getOrders(id),
+  getRecommendations()
+])
+```
+
+On the backend (Go, Java, etc.), do the same with goroutines, futures, thread pools. Just **bound concurrency** so you don't overload DB or downstream services.
+
+**What to expect:**
+- Total time becomes roughly the **max** of individual calls, not the sum
+- Example above: **~40 ms instead of 80 ms**
+- With real APIs doing 5–10 calls, this often saves **50–150 ms**
+
+#### Problem 3: Unindexed DB Queries / N+1
+
+**The pattern:**
+- Missing indexes: query scans millions of rows to find 10
+- GraphQL/ORM N+1: fetch list of 100 items, then for each item, another query for details
+
+**Simple fixes:**
+
+1. **Indexes:**
+   - For every query on the hot path, ensure `WHERE`, `JOIN`, and `ORDER BY` columns have appropriate indexes
+   - Use your DB's `EXPLAIN` to confirm you're using indexes, not doing full scans
+
+2. **Avoid N+1:**
+   - Use **batching**: fetch all related rows in one query using `IN (?)` or joins
+   - For GraphQL: DataLoader-like patterns (batch and cache per request)
+   - Write resolvers that operate on collections, not single-row lookups in loops
+
+**What to expect:**
+- **Indexed point lookup** in same AZ: typically **0.5–3 ms**
+- **Bad full-table scan**: **10–1000 ms** depending on data size
+- Fixing indexes / N+1 routinely takes endpoints from **hundreds of ms down to tens of ms**
+
+#### Problem 4: Synchronous Observability and Third-Party Calls
+
+**The pattern:**
+- Every API call does HTTP POST to Datadog or Logstash directly
+- Calls a third-party service synchronously (fraud detection, analytics)
+- The request **cannot complete** until these calls finish
+
+**Simple fixes:**
+
+1. **Observability:**
+   - **Logs:** Write to stdout or a local agent (e.g., Datadog/FluentBit) that ships asynchronously
+   - **Traces/metrics:** Use libraries that buffer and batch data; exporters should be non-blocking in request paths
+
+2. **Third-party APIs:**
+   - Move non-essential calls off the critical path: queue a job (Kafka/SQS/Rabbit) that a worker processes later
+   - For things like analytics or email, **fire-and-forget** with retry in a background worker
+   - Only keep sync those calls that absolutely must block (e.g., payment authorization)
+
+**What to expect:**
+- Removing synchronous observability often saves **10–50 ms** per request
+- Removing synchronous third-party calls can save **50–300+ ms** per call, plus remove tail-latency spikes when those services are slow
+
+#### Problem 5: Too Many Fine-Grained HTTP Calls from the Frontend
+
+**The pattern:**
+
+Frontend loads a page and fires:
+- `/user`
+- `/settings`
+- `/notifications`
+- `/recommendations`
+- `/permissions`
+- etc.
+
+Even with HTTP/2, each has its own server processing, auth, and potential DB queries.
+
+**Simple fixes:**
+- **Aggregate per feature or per page:** Make a "page data" endpoint that returns the coherent bundle of things that page needs
+- Or use **GraphQL** (or similar) to request a tailored data shape from one endpoint, with optimized resolvers
+
+**What to expect:**
+- Fewer round-trips to your backend
+- More importantly: you can **optimize the backend implementation once** (e.g., single set of DB queries)
+- In practice, merging 5–10 small endpoints into 1–2 well-designed ones can save **50–150 ms** on complex pages and dramatically reduce load on the backend
+
+### Phase 6: HTTP Response and Compression
+
+The server sends the response back:
+
+```http
+HTTP/2 200 OK
+Content-Type: application/json
+Content-Length: 1543
+Cache-Control: max-age=300
+
+{"users": [...]}
+```
+
+This takes **another half RTT** (one-way travel time) plus transmission time for the payload.
+
+#### Compression: When to Compress and When Not To
+
+Compression trades CPU for fewer bytes.
+
+**Compress:**
+- JSON, HTML, CSS, JS bundles, text > ~1–2 KB
+- Anything that is repetitive and textual
+
+**Do NOT compress (or get minimal benefit):**
+- JPEG/PNG/WebP images, video (already compressed)
+- Small JSON (<1 KB)—CPU overhead + buffering delay can dominate
+
+**Latency gotcha:**
+- Gzip/Brotli typically buffer data before emitting compressed output
+- For streaming responses, over-aggressive compression can delay first bytes (TTFB)
+- On server:
+  - For big JSON responses (100 KB+), compression is usually a net win
+  - For lots of tiny responses, consider `gzip` instead of `brotli` (less CPU) or no compression for bodies < X bytes
+
+**Compression impact on 3G (400 Kbps):**
+```
+Uncompressed JSON: 50KB → 1000 ms transmission
+Gzipped (8KB): → 160 ms transmission
+Brotli (6.5KB): → 130 ms transmission
+```
+
+**Simple fix:**
+- Enable **gzip or brotli compression** (brotli is 15-20% better than gzip)
+- Design APIs to return only requested fields (GraphQL, or REST with field selection)
+- Consider **binary formats** for high-throughput APIs (Protobuf, CBOR, MessagePack)—can be 5x smaller
+
+### Phase 7: Browser Processing (10-100ms)
+
+Finally, the browser processes the response:
+
+1. Parse the HTTP response headers
+2. Decompress the body (if gzipped/brotli)
+3. Parse JSON (or other format)
+4. Execute JavaScript callbacks
+5. Update the DOM
+6. Trigger re-renders (React, Vue, etc.)
+
+**Problem: Parsing huge JSON blobs synchronously**
+
+`JSON.parse()` on a 5MB response can take 200ms on a mid-range phone, blocking the main thread.
+
+**Simple fix:**
+- Use **streaming JSON parsers** for large responses
+- Parse and process data in **Web Workers** to avoid blocking the UI
+- Implement **virtual scrolling** for large lists
+- Use **incremental rendering** (Suspense, progressive hydration)
+
+**What to expect:**
+- Moving parsing off the main thread keeps UI responsive
+- Virtual scrolling reduces initial render time from hundreds of ms to tens of ms for large datasets
+
+## The Full Latency Budget
+
+Let's calculate the total time for a typical browser request from NYC to us-east-1 (20ms RTT):
+
+| Phase | Optimized | With Footguns |
+|-------|-----------|---------------|
+| DNS lookup | 0ms (cached) | 50ms (cache miss, multiple domains) |
+| TCP handshake | 0ms (reused) | 20ms |
+| TLS handshake | 0ms (reused) | 40ms (TLS 1.2) |
+| HTTP request | 10ms | 10ms |
+| Server: Cross-region DB call | — | +75ms |
+| Server: Sequential I/O (3 calls) | 40ms (parallel) | 120ms (serial) |
+| Server: Unindexed query | — | +200ms |
+| Server: Sync observability | — | +30ms |
+| HTTP response (10KB compressed) | 10ms | 10ms |
+| HTTP response (50KB uncompressed) | — | +100ms (3G) |
+| Browser parsing | 15ms | 15ms |
+| **Total** | **75ms** | **670ms** |
+
+**User perception thresholds:**
+- < 100ms: Instant
+- 100-300ms: Slight delay, acceptable
+- 300-1000ms: Noticeable lag
+- \> 1000ms: Frustrating
+
+The optimized version feels instant. The footgun version is painfully slow—**9× worse**.
+
+## REST vs gRPC vs GraphQL: Latency Characteristics
+
+### REST over HTTP(S)
+
+- Human-readable, JSON, simple
+- Built on HTTP/1.1 or HTTP/2
+- Excellent tooling & observability
+
+**Latency characteristics:**
+- With HTTP/1.1: 1 request at a time per connection (browsers open ~6 connections per origin → head-of-line blocking)
+- With HTTP/2: Multiplexed streams, header compression (HPACK), fewer connections
+
+**When is REST fine?**
+Almost always, unless:
+- You need thousands of QPS with very small messages and want to shave every byte
+- You need strong typing and streaming semantics
+
+### gRPC
+
+- Runs over HTTP/2 (and HTTP/3)
+- Uses Protobuf (binary, compact, schema-driven)
+- Supports unary RPCs, client-streaming, server-streaming, bidirectional streaming
+
+**Latency advantages:**
+- Smaller payloads (binary vs JSON)
+- HTTP/2 multiplexing
+- Fewer bytes in headers
+- Built-in streaming avoids "poll every X seconds" patterns
+
+**Tradeoffs:**
+- More complex tooling in browsers (gRPC-Web, proxies)
+- Less human-readable payloads
+- Requires more discipline around schemas
+
+### GraphQL
+
+GraphQL is not a transport—it's typically HTTP/JSON or WebSockets/JSON.
+
+**Pros:**
+- One endpoint, flexible query shapes
+- Can reduce over-fetching and number of round-trips
+- Good fit for complex UIs needing many related bits of data
+
+**Latency pitfalls:**
+- Naive resolver implementations: N+1 queries for nested fields
+- Overly generic resolvers hitting DB many times
+- Highly dynamic queries can be hard to cache at CDN
+- Complex queries can blow up server time if not constrained
+
+**GraphQL helps latency when:**
+You're currently making multiple REST calls from the UI, and GraphQL lets you fold them into a single, well-optimized backend query.
+
+**GraphQL hurts latency when:**
+You allow arbitrary queries, don't batch/optimize resolvers, and end up doing many DB calls.
+
+### Multiple Requests vs Fewer
+
+- **HTTP/1.1:** Multiple REST calls really do hurt—each might queue behind others per connection
+- **HTTP/2+:** Multiple requests are fine so long as backend can handle them
+
+Network-wise, fewer larger responses are often better than many tiny ones. But it's easy to over-aggregate: one monster endpoint becomes a performance bottleneck and is hard to cache.
+
+**The practical sweet spot:**
+- Consolidate things that are **naturally fetched together** (per-page or per-feature)
+- Avoid fine-grained "RPC for every small thing" from the browser
+
+## Streaming and How It Helps
+
+**Streaming ≠ "magically faster total work."** It's about:
+- **Reducing time-to-first-byte**: Client starts rendering before the whole payload is ready
+- **Reducing request overhead**: Eliminating repeated handshakes and headers
+- **Enabling incremental updates**: You don't wait for all data to be computed
+
+### Streaming Patterns
+
+1. **HTTP chunked transfer / incremental HTML**
+   - Server streams chunks of HTML, browser starts rendering early
+   - Used by server-side React with Suspense
+
+2. **Server-Sent Events (SSE)**
+   - Unidirectional stream (server → client) over HTTP
+   - Great for events, notifications; simpler than WebSockets
+
+3. **WebSockets**
+   - Full duplex, one connection, many small messages
+   - Ideal for live UIs, event-driven state
+
+4. **gRPC streaming**
+   - Typed, streaming RPCs
+   - Better for service-to-service and native clients
+
+**Latency benefits:**
+- For **big responses**: Streaming allows client to start processing the first chunk (e.g., first list items) after 1 DB query while server still computes the rest
+- For **long-lived interactions**: Once the stream is open, updates avoid the full HTTP request path each time
+
+**Footguns:**
+- Compression and streaming: Some setups buffer too much data before emitting compressed chunks → you lose early TTFB advantage
+- Backpressure: If consumer is slow, you must either buffer (memory), drop messages, or apply backpressure to producer
+
+## Theoretical Minimum Latency
+
+### Speed-of-Light + Protocol Overhead
+
+Rough numbers, user in NYC:
+- To us-east-1: **~10–20 ms** RTT
+- To us-west-2: **~60–80 ms** RTT
+- To EU: **~70–100 ms** RTT
+
+**Minimum for a single REST call over HTTPS with a new connection:**
+- TCP handshake: 1 RTT
+- TLS handshake: 1 RTT (TLS 1.3)
+- Request + response: 1 RTT
+- **Total: ~3 RTT = 30–60 ms** (best case, us-east-1)
+
+**With connection reuse:**
+- You only pay the data RTT: **~10–20 ms**
+
+**With edge close to user:**
+- RTT can drop to **<10 ms** in some geos
+
+### Theoretical Minimum by Mode (Warm Connection)
+
+Approximate per-request overhead, same region, warm TCP/TLS and HTTP/2/3 connection:
+
+| Mode | Extra overhead vs raw TCP | Typical per-message RTT |
+|------|---------------------------|-------------------------|
+| Raw TCP | Baseline | ~RTT (10–20 ms) |
+| HTTP/2 REST | + headers, parsing | RTT + 1–5 ms server |
+| gRPC unary | Slightly less payload | Similar to REST, sometimes a few ms less CPU |
+| WebSocket message | Very small frame overhead | RTT + (sub-ms to few ms) |
+| gRPC/WebSocket streaming | Only server send | ≈ 0.5–1 RTT (10–20 ms) |
+
+Once you have a live stream, server-pushed updates are ~one-way latency, not request+response.
+
+## Where You Most Commonly Double Latency
+
+Here are the top ways people accidentally 2–10× their latency:
+
+1. **Not reusing connections**: No keep-alive → every request pays TCP+TLS
+2. **Cross-region topology**: App/DB/services spread across regions (easy extra 50–150 ms hops)
+3. **Sequential work instead of parallel**: Multiple DB queries and service calls done one after another
+4. **Unindexed DB queries / N+1 patterns**: Full scans and many small queries
+5. **Synchronous observability and third-party calls**: Logging/metrics/tracing or external APIs on the hot path
+6. **Too many fine-grained HTTP calls from the frontend**: Especially over HTTP/1.1 to mobile devices
+
+## Decision-Making Framework
+
+Not every optimization is worth it. Here's the order of operations if you care about latency:
+
+### 1. Co-locate services and DBs in the same region/AZ
+**Impact:** Saves 50–150 ms per cross-region hop avoided
+
+### 2. Reuse connections (keep-alive, HTTP/2/3)
+**Impact:** Eliminates repeated TCP+TLS handshakes (saves 20–40+ ms per request)
+
+### 3. Eliminate cross-region and synchronous third-party calls in hot path
+**Impact:** Saves 50–300+ ms per synchronous external call
+
+### 4. Parallelize independent work
+**Impact:** Often saves 50–150 ms when moving from serial to parallel I/O
+
+### 5. Fix DB indexing / N+1
+**Impact:** Can reduce query time from hundreds of ms to single-digit ms
+
+### 6. Reduce number of endpoints per page
+**Impact:** Saves 50–150 ms on complex pages
+
+### 7. Enable compression
+**Impact:** Reduces transmission time by 70–90% on text payloads
+
+### Only After All That...
+
+...would you start thinking about:
+- Placement groups
+- Kernel tuning
+- Really low-level network tricks
+- Micro-optimizing header sizes (save 100 bytes)
+- Switching JSON libraries for 5% parsing gains
+
+These are only worth it for HFT, real-time audio/video at scale, or very high QPS low-latency systems.
+
+## Measuring Your Actual Latency
+
+Don't guess. Measure:
+
+1. **Browser DevTools**: Network tab shows per-request timing breakdown (DNS, TCP, TLS, waiting, content download)
+2. **Real User Monitoring (RUM)**: Tools like DataDog, New Relic, or simple `performance.timing` APIs
+3. **Synthetic Monitoring**: Test from different geos (WebPageTest, Pingdom)
+
+Focus on **P95 latency** (95th percentile), not averages. If P95 is 2 seconds, 5% of your users have a terrible experience.
+
+## Summary: The Biggest Wins
+
+If you only fix three things:
+
+1. **Co-locate your app and DB in the same region (ideally same AZ)**: Saves 50–150 ms per avoided cross-region hop
+2. **Reuse connections** (HTTP/2 + keep-alive): Saves 20–40+ ms by eliminating repeated handshakes
+3. **Parallelize independent work**: Saves 50–150 ms by not waiting for serial I/O
+
+These three changes alone often **halve your API latency** for most users.
+
+Latency isn't a single number—it's a stack of decisions. Each phase compounds. Know where your time is going, fix the biggest offenders first, and measure the impact.
