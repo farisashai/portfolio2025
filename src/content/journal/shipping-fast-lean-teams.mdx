@@ -8,248 +8,257 @@ featured: false
 draft: true
 ---
 
-When I joined Formal five months ago as the only frontend engineer, I inherited every pixel the company shipped. Every backend API change needed UI surfaces. Every security feature needed controls. Every customer complaint about a cramped layout or missing focus state landed on my desk. The backend team—six engineers writing Go—was moving fast. My job was to keep up without the frontend becoming the bottleneck.
+When I joined Formal as the only frontend engineer, I inherited every pixel the company shipped. Every backend change needed UI surfaces. Every permission model update needed new affordances. Every customer complaint about spacing, responsiveness, or broken focus states landed directly on my desk. The backend team—six engineers writing Go—moved quickly. My job was to ensure the frontend never became the bottleneck.
 
-I thought AI would solve this. And in some ways it did. I was writing code faster than ever. But speed without structure just meant I was creating problems faster too. I'd ship a feature, then discover I'd tangled the logic in ways that made the next feature harder. I'd duplicate a pattern because I forgot I'd already solved it elsewhere. I'd miss edge cases because I was prompting AI without really understanding what I was asking for.
+AI made me faster, but it didn’t spare me from judgment. In the early months, I generated code so quickly that I stopped taking the time to understand it. Each iteration layered more complexity into the logic. I duplicated fixes I’d already made elsewhere. I missed edge cases because I was prompting AI without fully grasping what I was asking for.
 
-These weren't frontend bugs. They were systems failures. And I realized the hard way that modern tools don't eliminate judgment—they amplify it. If your thinking is shallow, AI makes you consistently wrong at scale.
+These weren’t classic “bugs.” They were failures of engineering judgment. Modern tools don’t eliminate the need for judgment—they amplify the cost of lacking it. AI accelerates your thinking, whether your thinking is solid or shallow.
 
-This article isn't a listicle of productivity hacks. It's the engineering mindset I've developed at the intersection of frontend craft, backend distributed systems thinking, and UI/UX design principles. Some of these ideas will feel obvious. Some will feel wrong until you've lived them. But all of them come from the pressure of being the only person responsible for user trust in a fast-moving company.
+This article is the mindset I’ve developed at the intersection of frontend craft, system design, product sensitivity, and the pressure of being solely responsible for user trust in a fast-moving environment.
 
-**The Principles:**
+---
 
-1. [Stability as the Foundation of Speed](#principle-1-stability-as-the-foundation-of-speed)
-2. [Minimize Surface Area for Failure](#principle-2-minimize-surface-area-for-failure)
-3. [Design for Continuous Momentum](#principle-3-design-for-continuous-momentum)
-4. [Systemize Everything That Repeats](#principle-4-systemize-everything-that-repeats)
-5. [A Working Solution Is Not the Correct Solution](#principle-5-a-working-solution-is-not-the-correct-solution)
-6. [Determinism Beats Intelligence](#principle-6-determinism-beats-intelligence)
-7. [The Frontend as Trust Interface](#principle-7-the-frontend-as-trust-interface)
-8. [Speed Is a Property of Systems, Not Effort](#principle-8-speed-is-a-property-of-systems-not-effort)
+# Principle 1: Stability Enables Speed
 
-## Principle 1: Stability as the Foundation of Speed
+Last year, Bun was everywhere—benchmarks, hype, excitement about faster installs and better DX. As someone who likes to push engineering forward, I fell into the common trap: I tried optimizing systems that weren’t asking to be optimized. I spun up a Next.js + Bun project and immediately ran into issues. Packages that worked flawlessly in Node broke in subtle ways. Integrations failed. Pages crashed.
 
-About a year ago, I saw Bun trending everywhere. A drop-in Node replacement that promised faster builds, faster package installs, and better DX. The benchmarks looked incredible. The community was buzzing. I figured: why wouldn't I adopt this?
+The lesson wasn’t that Bun was flawed—it’s now far more mature. The lesson was that **timing matters more than technology**. When you adopt tools early, you become the one discovering the landmines. You pay the ecosystem’s learning cost.
 
-So I spun up a prototype Next.js + Bun project to see what all the hype was about. Within an hour, I hit my first wall: a package that worked fine in Node threw cryptic errors in Bun. Then another. Then another. These weren't obscure dependencies—these were popular libraries that just hadn't been tested against Bun's edge cases yet.
+If your job is to ship consistently with high reliability, the boring stack—the stable, well-worn, community-validated stack—will almost always outperform the clever one. Stability is a force multiplier: fewer surprises, better documentation, broader community testing, and critically, AI models with stronger priors and lower error rates.
 
-I spent the next day working around compatibility issues, finding alternative packages, and debugging behavior that worked in Node but failed silently in Bun. And I realized: **I'm the beta tester here.** I'm paying the discovery cost for a tool that isn't mature enough for the problem I'm solving.
+AI thrives on mature ecosystems. If I ask it to refactor a Next.js component, it knows the patterns. If I ask it to navigate an experimental runtime, I end up teaching the model while I’m learning myself. That’s a slowdown disguised as innovation.
 
-A year later? Bun has 1:1 Node compatibility. The rough edges are smoothed over. Soon it might be the obvious choice. But that arc taught me something critical: **timing matters more than technology**. I don't place big bets on tools in the first 15-20% of the adoption curve. I let others find the landmines. I inherit the lessons after the community has stress-tested it at scale.
+Exploration is valuable. But shipping at velocity requires foundations that don’t wobble.
 
-This isn't anti-innovation. It's pro-momentum. Cutting-edge tools are great for learning and sharpening your first-principles thinking. But when you're the only frontend engineer and stability is your force multiplier, boring wins. The stack that works 100% of the time beats the stack that's 10% faster but breaks on novel edge cases.
+Stability isn’t conservatism.
+**Stability is what lets you move fast without tripping.**
 
-Here's the thing people miss: **software is uniquely democratic**. More money doesn't buy you better open-source tools. The network effects of popular projects compound faster than any solo effort. Communities iterate, suggest features, file bugs, write documentation. When you adopt mature tooling, you're not just getting code—you're getting the collective intelligence of thousands of engineers who hit problems before you did.
+---
 
-And AI thrives on this too. Models are trained on popular ecosystems. When I prompt Cursor to refactor something in Next.js, it knows every pattern, every edge case, every common mistake. When I try something experimental, the model has no priors. I'm teaching it while I'm learning myself—and that's when errors compound.
+# Principle 2: Minimize Surface Area for Failure
 
-Users notice speed. Developers notice poor DX. So many problems are "solved" in a way that's good enough that absolutely nobody would notice the difference if you polished it further. Enough constraints arise organically that you shouldn't jump ten steps ahead. When the problem becomes valuable enough, the upgrade path becomes obvious. Until then, **boring wins because boring ships**.
+Every decision, dependency, pattern, or abstraction creates surface area for failure. Reducing unnecessary surface area is one of the highest-leverage skills you can develop on a small team.
 
-## Principle 2: Minimize Surface Area for Failure
+I approach engineering like minimalism: start with the simplest thing that works, and only add complexity when its absence becomes a real bottleneck. Many teams do the opposite—they build infrastructure “just in case,” masking speculation as responsibility. This creates premature complexity without real value.
 
-Here's the principle underneath all of this: **the less surface area you expose, the more robust you are**.
+When I joined Formal, I could have built:
 
-Every decision you make is a potential failure point. Every abstraction you introduce is something that can break. Every new tool is a dependency that can drift. Every custom solution is maintenance debt. The goal isn't to make zero decisions—it's to make only the decisions that matter.
+* a feature-flag framework
+* a large component library
+* a caching layer
+* a full internal design system
+* custom observability
 
-I think about this like minimalism for engineering. You don't start with a maximalist architecture and pare it down. You start with the simplest thing that works and only add complexity when its absence becomes painful. Most engineers do the opposite—they preemptively solve problems they don't have yet because it feels responsible. It's not. It's speculative complexity, and it compounds faster than speculative value.
+All of these are genuinely valuable—*when the team and product are ready*. But early on, none were blocking us. So I didn’t build them. We shipped features. Only when something actually hurt did we add the least-complex system required to relieve the constraint. Not the future-proof version. Not the generalized version. Just enough to remove the current friction.
 
-There's an endless set of decisions you could make. The skill is **focusing on the ones that are valuable, new, and unexplored**. Trust the decisions that are already solved. Leave alone the ones that haven't become problems yet. This is progressive disclosure applied to engineering: reveal complexity only when the user—or the system—demands it.
+The nuance:
+**Large organizations absolutely do have long-timescale problems.**
+These aren’t speculative—they’re real sources of future pain that compound slowly. Logging strategy, domain modeling, operational risk, security boundaries—ignoring these eventually becomes catastrophic. But those are genuine constraints, not imagined ones.
 
-When I joined Formal, I could have built a feature flag system, a design system with 50 components, a sophisticated caching layer, custom observability tooling, and a multi-region deployment strategy. Some teams would call that "laying groundwork." I call it **premature optimization disguised as best practices**.
+The art is recognizing the difference.
 
-Instead, I shipped features. And when caching became a bottleneck, we added caching. When feature flags became necessary, we added feature flags. When the design system needed a new component, we built exactly that component. No more, no less. Each addition was justified by real pain, not hypothetical scale.
+Real constraints block progress.
+Imagined constraints make you feel smart.
+Solving only real constraints keeps you fast.
 
-This isn't about being lazy or reckless. It's about **trusting speed of execution and strong fundamentals**. If your fundamentals are solid—good types, clear boundaries, simple patterns—you can move fast and refactor later without collapse. The architecture emerges from use, not from speculation.
+---
 
-The trap is thinking you need to decide everything up front. You don't. Most decisions can wait. And the ones that can't? Those announce themselves loudly. You won't miss them. A real constraint feels different from an imagined one. A real constraint blocks progress. An imagined constraint just makes you feel smart.
+# Principle 3: Understand the True Cost of Context Switching
 
-So the rule I've internalized: **only solve problems you have, not problems you might have**. And when you do solve them, solve them in the simplest way that removes the constraint. Don't solve the generalized version. Don't build the framework. Build the thing, ship it, and trust that you'll know when it's time to abstract.
+AI’s speed creates a cognitive trap: because the system makes progress while you’re distracted, you feel capable of juggling more complexity than you can handle. But your attention does not scale. Context switching is expensive—especially when the work is ambiguous, taste-driven, or architectural.
 
-This is how you maintain velocity without accumulating fragility. Fewer decisions means fewer wrong decisions. Fewer abstractions means fewer places for bugs to hide. Fewer dependencies means fewer things that can break. **Controlled complexity is a competitive advantage**—because while your competitors are architecting, you're shipping.
+Worse, some tasks will never be “one-shot” no matter how well-crafted the prompt:
 
-## Principle 3: Design for Continuous Momentum
+* the right solution isn’t known upfront
+* the tradeoffs are subjective
+* constraints are uncertain
+* the best direction emerges only through iteration
+* a long “perfect prompt” is brittle or wrong
 
-Here's a controversial take: **context switching has never been real**. At least not in the way people describe it. You've probably heard the claim that it takes "15 minutes to recover context" after an interruption. That's not backed by research—it's organizational mythology that justifies bad processes.
+For these tasks—design, UX flows, complex interactions, architectural boundaries—AI is best as a stepwise collaborator: take a step, observe, critique, refine. Discovery can’t be automated.
 
-What is real? **Mental load**. Juggling multiple deeply uncertain problems at once makes it harder to apply taste and judgment to each one equally. When you're weighing trade-offs on two complex features simultaneously, quality slips on both.
+But in any organization with real velocity, you will get interrupted constantly:
+new enum cases, schema shifts, permission updates, config rewrites. These require almost no deep thought. They’re chores. I routinely automate them via Cursor—even directly from Slack—and let the agent output a clean PR that I review later with full attention.
 
-But here's the thing: not all work requires deep thought. Some tasks are **one-shot mechanical fixes** where the plan is obvious and the implementation is just execution. These don't create mental load—they're just chores. And AI is exceptionally good at chores.
+My workflow is built around this distinction:
 
-This completely changes how I work. I use **multiple Git worktrees** to keep parallel threads of work live at once. Each worktree is a separate checkout, so I can have an active branch for a UI redesign, another for a small bug fix, another for a type migration—all without stashing or context-switching in the traditional sense.
+* Keep multiple Git worktrees open.
+* Focus all attention on a single ambiguous task.
+* Let AI handle mechanical tasks in the background.
+* Review those PRs intentionally, not reactively.
 
-When the backend team adds a new `policy_scope` enum that affects permissions across six components, I don't stop what I'm doing. I spin up Cursor in a separate worktree, prompt it to update every affected prop type and mock data file, let it generate the PR, and queue it for review later. I validate it against the test suite while I finish my redesign in the main worktree. **Parallel velocity, zero chaos**.
+AI increases throughput.
+Your mind remains the bottleneck.
+Flow state must be protected, not oversubscribed.
 
-The work I don't delegate? Features that require taste through iterative refinement—problems where I don't know the answer yet and need to try multiple options, observe, adjust. Those can't be parallelized thoughtfully. But they also can't be delegated to AI, because no amount of prompting will replace the discovery process.
+---
 
-So the rule is simple: **one-shot tasks get automated and parallelized. Taste-driven work gets my full attention**. The mental load stays manageable because I'm never juggling two uncertain problems—I'm juggling one uncertain problem and a queue of deterministic fixes that AI handles in the background.
+# Principle 4: Build Systems Only Where Invariants Are Stable
 
-Everything has tradeoffs. Study good design principles to back your decisions and learn from feedback without taking it personally. Iterate and refine rather than blocking progress. **Strive to spend all of your time on product decisions as the only thing that matters.** Everything else you do is a side effect if it allows you to make more product decisions.
+Not everything needs a system. Systems should only be built where the rules will outlive the business logic.
 
-## Principle 4: Systemize Everything That Repeats
+Examples:
 
-**Once is noise. Twice is signal.** The moment I leave the same PR comment twice, that's not a style preference—it's a missing system. If I re-prompt an AI with the same correction, that's not oversight—it's a bug in my process.
+* lint rules encoding style and architectural boundaries
+* GritQL patterns enforcing consistent component structure
+* static type guarantees from domain models
+* automated checks for known pitfalls and regressions
 
-Software engineers are uniquely trained at pattern recognition and abstraction layers for efficiency in systems, which becomes useful when it leaks into other areas of life too. This has always applied to the code itself. What's new is that it now applies to almost everything.
+These systems reduce cognitive load because their invariants rarely change. They require minimal upkeep. If the underlying language or framework changes dramatically, the system simply stops applying—it doesn’t create drag.
 
-Obviously this isn't strictly about something happening exactly twice, but there is an understood point everywhere where you would write an implementation once to be reused ten times rather than copy-paste it in ten places to maintain. This pattern recognition often still lacks creativity in where it can be used, likely out of habit of traditional ways.
+The right systems free you.
+The wrong systems burden you.
 
-I treat this as seriously as I treat code duplication. When I catch myself doing something twice, I ask: **what system would prevent this from requiring human intervention again?**
+My heuristic:
 
-The ability to write quick specs—what I call "vibe code"—for something simple and non-essential is rapidly expanding. The applicable domains are growing:
+* If something appears twice, encode the rule.
+* If a mistake appears twice, block it.
+* If a system prevents entire categories of thinking, it’s worth building.
 
-- AI-assisted conventions for codebase-specific rules
-- Self-updating documentation from PR metadata
-- Reusable prompts in our `AGENTS.md` that teach AI tools our patterns
-- Custom linting rules generated by AI in minutes instead of hours
+This is how you build a self-reinforcing engineering environment—one where the effort you invest once continues paying dividends indefinitely.
 
-AI doesn't just help me write code faster. **AI helps me turn vague patterns into deterministic rules faster**. Writing a custom ESLint plugin used to take hours—understanding the AST API, handling edge cases, testing across the codebase. Now I can have AI generate a GritQL pattern or Biome rule in minutes. The economics flip. Suddenly it's worth encoding a pattern that only saves 5 minutes a week, because the upfront cost is so low.
+Here’s my personal north star:
+**If I disappeared for a week, could someone ship code that looks exactly like mine?**
+Not philosophically similar.
+Not “basically the same.”
+**Indistinguishable.**
 
-This creates a **self-improving codebase flywheel**:
+That’s when you know the systems are doing the work.
+Not heroics. Not taste. Not vigilance. Systems.
 
-1. Issue appears in code review
-2. I spend 15 minutes with AI writing a static check
-3. Check catches the issue pre-commit for the next developer
-4. Issue never appears in a PR again
-5. Reviewers can focus on higher-level concerns
+---
 
-Fix classes of bugs, not one-off bugs. Prevent user error and oversight in the places it matters. Speed up safe coding without constantly needing to remember different pieces since there is a single agreed-upon solution internally that is good enough with built-in validation.
+# Principle 5: A Working Solution Is Not the Correct Solution
 
-## Principle 5: A Working Solution Is Not the Correct Solution
+AI is excellent at producing working implementations. But “works” and “correct” are different layers.
 
-AI is exceptionally good at finding **a** solution. Often it's even a working solution. But working and correct are not the same thing.
+Correctness includes:
 
-Here's what I mean: when you prompt an AI to build something, you're giving it constraints. But those constraints are almost always incomplete. You're not including the tribal knowledge about how your team structures components. You're not encoding the UX principles that guide your design decisions. You're not specifying the performance implications of different approaches.
+* meaningful boundaries
+* stable invariants
+* alignment with domain concepts
+* extensibility under evolving requirements
+* clarity for future readers
+* predictable performance characteristics
 
-So the AI gives you something that compiles, passes tests, and looks reasonable on the surface. And if you're moving fast, it's tempting to merge it. But six months later, when that feature needs to evolve, you discover the abstraction boundaries were wrong. The logic is tangled. The types are too loose. The performance characteristics don't scale.
+AI doesn’t know the unwritten rules:
+how your team names things, how components should feel, what constitutes good UI, what abstractions are sacred. Unless you over-specify—which is slow and brittle—the model fills gaps with plausible guesses.
 
-This is why I've developed what I call **compulsive code review paranoia**. I never skip reviewing AI-generated code. Not because I don't trust the tool, but because **I'm still responsible for every line that ships**. The AI is writing faster than I could alone—but I'm still the one who owns the judgment call about whether this is how we would intentionally build it.
+That’s why I review AI output with more scrutiny than human output. Not because AI is careless, but because it lacks context.
 
-You can't shift blame to the system. If something breaks, users don't care that an AI wrote it. They care that you shipped it. Your job isn't just to generate working code faster—it's to **ship correct code while maintaining velocity**.
+My review questions:
 
-This is the pressure that's evolved for me: a level of detail and care that nobody else has in an explainable way. I'm not just checking if it works. I'm asking:
+* Would I structure it this way by hand?
+* Will this scale when requirements change?
+* Are the abstractions overly clever?
+* Does it duplicate existing patterns?
+* Is cognitive load proportional to what it does?
 
-- Is this how I would structure it if I wrote it from scratch?
-- Are the types precise or just "good enough"?
-- Does this introduce duplication or reuse existing patterns?
-- What happens when the requirements change slightly?
-- Is the cognitive load of understanding this proportional to what it does?
+AI accelerates execution.
+It also accelerates the consequences of poor judgment.
 
-It's slower than blindly merging. But it's what keeps trust intact. We move fast publicly because we move carefully privately.
+Your job isn’t to merge code faster.
+Your job is to ensure correctness scales with velocity.
 
-**You should never be scared of using tools to replace yourself.** AI is shifting dynamics of work, so you will literally just be using your time more efficiently. You'll get replaced by someone who is using AI to its limits if you resist. The people that continue to challenge themselves with the accelerated speed at their disposal will have more compound returns now, breaking away from the average engineer.
+---
 
-## Principle 6: Determinism Beats Intelligence
+# Principle 6: Determinism Beats Intelligence Where It Matters
 
-Here's an uncomfortable truth: **AI-based code review is computationally wasteful for most tasks**.
+AI is too slow and inconsistent to enforce mechanical rules. A PR agent might take 45 seconds. A static linter runs in milliseconds. Deterministic enforcement belongs to deterministic tools.
 
-An AI agent analyzing a PR takes 30-60 seconds. A static linter checking the same patterns runs in 200 milliseconds across the entire codebase. Even at zero temperature, token generation is orders of magnitude slower than code execution. This isn't a temporary limitation—it's the physics of inference.
+AI’s real power is in generating those deterministic tools.
 
-So why would you ever use AI for enforcement? You wouldn't. **AI should build the checks, not be the checks**.
+My feedback loop now looks like:
 
-Traditional approach:
-1. Human notices a pattern violation
-2. Human writes a PR comment
-3. Human repeats this on every future PR
-4. Knowledge transfer is manual and slow
+1. Notice a pattern violation.
+2. Spend ~10 minutes with AI writing a lint rule or GritQL pattern.
+3. Commit it once.
+4. Never think about it again.
 
-The new approach:
-1. Human notices a pattern violation
-2. AI writes a static check (Biome rule, GritQL pattern, custom linter)
-3. Check runs in milliseconds on every future commit
-4. Knowledge is permanently encoded
+Mechanical correctness becomes instant.
+Semantic correctness becomes AI-assisted.
 
-The difference is profound. Writing custom linter rules used to be prohibitively expensive. You needed to understand AST APIs, handle edge cases, test across the codebase. Most teams decided it wasn't worth it unless the bug was catastrophic.
+This separation allows speed *and* safety.
 
-Now? I can have AI generate a GritQL pattern in 10 minutes. And suddenly the economics flip: if that check saves 1 hour of debugging over the next month, it's worth it. If it catches 10 bugs over the next year, it's invaluable.
+Static:
 
-This is the architecture I've landed on:
+* TypeScript
+* Biome
+* ESLint
+* GritQL
+  Provide structural guarantees.
 
-**Fast feedback loop (static):**
-- Biome for style and patterns
-- Custom GritQL for domain-specific rules
-- TypeScript for type safety
-- Custom ESLint for React conventions
-- Runs in milliseconds, blocks bad commits locally
+AI:
 
-**Slow feedback loop (AI):**
-- Architectural coherence checks
-- Readability and naming appropriateness
-- "This layout looks cramped"
-- "This explanation could be clearer"
-- Runs asynchronously, provides guidance not gates
+* readability
+* architectural coherence
+* naming
+* UX flow coherence
+  Provide qualitative insight that resists formalization.
 
-The static layer ensures the code is **structurally correct**. The AI layer ensures it's **semantically sound**. When you try to use AI for both, you get slow feedback loops and non-deterministic enforcement. When you use each tool for its strength, you get instant mechanical correctness *and* thoughtful qualitative guidance.
+Use each tool where it excels.
 
-Here's where AI truly excels: **abstract quality domains that resist formal specification**. No linter can tell you "this function is hard to follow." No static rule can detect "this variable name doesn't match the domain concept." But AI—trained on millions of examples—develops intuition for these subjective qualities.
+---
 
-Separation of concerns isn't just good architecture—it's good tooling strategy.
+# Principle 7: The Frontend Is the Trust Boundary
 
-## Principle 7: The Frontend as Trust Interface
+Frontend engineers don’t control data correctness—but we absolutely control how reliable the product *feels*. A backend failure can be invisible if the UI gracefully recovers: retry flows, clear messaging, safe fallbacks. But a small UI failure—missing focus state, broken layout, unresponsive button—shatters trust immediately.
 
-The frontend doesn't touch our data layer—only the API contracts. This means I can never be responsible for a data corruption or a backend logic error. What I am responsible for is **user trust**. Every bug sounds like: "I can't do my job anymore."
+Users judge reliability by what they touch.
 
-That's why frontend quality isn't negotiable. Backend errors might corrupt data. Frontend errors corrupt confidence. A single layout bug, a missing focus state, a button that doesn't respond—these feel like product failures even when the backend is perfect.
+This shapes how I approach quality. I maintain a mental checklist for every user-facing change:
 
-This fundamentally shapes how I think about quality. I maintain a **standard frontend checklist** that I validate before shipping anything that touches user-facing surfaces:
+* functional correctness
+* accessibility
+* responsiveness
+* error states and fallback UI
+* code clarity and duplication
+* performance and bundle cost
+* alignment with our design system
 
-- **Functional behavior**: Does it do what it claims?
-- **Accessibility**: Keyboard nav, focus states, screen readers
-- **Responsiveness**: Works across viewport widths
-- **Code quality**: No duplication, readable logic, constants properly hoisted
-- **UI/UX principles**: Consistent with our design system
-- **Error cases**: Fallback UI when things go wrong
-- **Security**: No XSS, injection, or data leaks
-- **Bundle size**: No accidental bloat
-- **Type safety**: Full TypeScript coverage
-- **Performance**: Web vitals, network latency considerations
+Not every dimension matters for every PR, but knowing the space means I can spot trust boundaries quickly.
 
-Not every PR touches every dimension, but knowing the space means I can spot gaps quickly. And here's the thing: even if someone knows this checklist by heart, they can still overlook items if validation requires cognitive load. That's why I've been working on making these checks **executable, not aspirational**.
+Imperfection is inevitable, but risks are not equal:
 
-Some can be automated (type safety, bundle size, accessibility scanners). Some require AI-assisted review (readability, naming consistency). Some still require human judgment (does this interaction feel right?). The goal isn't perfection—it's **systematized quality** where the right thing is also the easy thing.
+* Critical-path functional bugs: zero tolerance.
+* Visual glitches: batch and refine later.
+* Systems changes: high caution, manual validation.
+* Nice-to-haves: ship when ready.
 
-### Accepting strategic imperfection
+The skill is knowing when to slow down. You slow down at trust boundaries—data paths, accessibility changes, dependency updates—because the cost of mistakes is high and automation cannot replace judgment.
 
-Asking for perfection is asking to predict every user behavior—every keypress, mouse event, network condition, screen size. That's impossible. Data will change. Requirements will evolve. The job's never done.
+---
 
-But here's the nuance: **imperfection isn't uniform**. Some bugs are catastrophic. Some are cosmetic. Some are annoying but non-blocking. The risk profile determines the tolerance.
+# Principle 8: Speed Is a Property of Systems, Not Effort
 
-I maintain different standards based on impact:
+I’ve rewritten entire features from scratch because the first version’s boundaries were wrong. When boundaries are wrong, bugs multiply. When boundaries are right, bugs vanish.
 
-- **Critical path functional bugs**: Zero tolerance. If it blocks a user from doing their job, it doesn't ship.
-- **Visual glitches**: High bar, but can be batched if non-blocking.
-- **Systems changes**: High risk, low reward to customers—require extra caution and manual testing.
-- **Nice-to-have enhancements**: Ship when ready, not when perfect.
+It’s cheaper to evaluate a bad plan than to understand bad code. Before delegating anything to AI, I ask for the plan. If I can’t understand the plan, I slow down and treat the implementation with suspicion.
 
-This might sound obvious, but it's surprisingly easy to lose sight of when you're moving fast. I've caught myself holding up a feature for a minor visual tweak that zero users would notice, while rushing a systems change that could break permissions. The instinct is backwards—frontend engineers are trained to see visual details, so we optimize for them even when they're not the actual risk.
+Velocity is not “typing faster.”
+Velocity is reducing cognitive load and increasing clarity so decisions take less energy and systems take more responsibility.
 
-The real skill is **knowing when to slow down**. And the answer is: slow down at trust boundaries. When I'm touching user data paths, I test manually. When I'm changing accessibility behavior, I verify with a screen reader. When I'm updating dependencies, I re-run bundle analysis. These are manual checkpoints that can't be fully automated, because they require judgment about what matters.
+This reframes the job:
 
-If a change is easy enough to add on immediately, I'll often bundle it rather than split into separate PRs. The overhead of creating, reviewing, and merging multiple PRs can exceed the cognitive cost of a slightly larger changeset. But large PRs that mix refactors with features? That's where bugs hide. The rule: **keep blast radius proportional to risk**.
+The output of a senior engineer isn’t code.
+The output is **product decisions made with clarity and confidence**.
 
-## Principle 8: Speed Is a Property of Systems, Not Effort
+AI increases throughput, but it cannot increase your judgment. You can’t scale velocity faster than you can scale understanding.
 
-I can't count how many features I've built where I iterated endlessly on a stack of bugs, only to scrap the PR and rebuild from scratch once I understood where the boundaries should actually live. The right abstractions make bugs disappear. The wrong ones multiply them.
+The long-term compounding value comes from systems:
 
-**It's cheaper to look at a bad plan than to read bad code.** I've learned to force myself to plan before implementing anything non-trivial. Not because I'm disciplined, but because I've paid the cost of skipping this step too many times. And when I prompt AI to build something I don't understand, I ask for the plan first. If I still can't understand the plan, I don't delegate the implementation—I read the generated code with special care, because I know I'm in dangerous territory.
+* each bug caught becomes a permanent rule
+* each architectural decision becomes a shared pattern
+* each repeated mistake becomes a blocked path
+* each successful abstraction reduces future friction
 
-Resist the pressure to ask AI to build something you don't understand. At the very least, ask for a plan and fully understand that plan before implementation. Acknowledge when you still can't understand but need the implementation done, and then read with a special amount of care.
+Over time, the codebase becomes self-defending—and velocity becomes independent of who’s typing.
 
-This is the mindset shift: **resist the pressure to move faster than your understanding**. AI makes it easy to generate code that works. But working code isn't the goal—maintainable systems are. And maintainable systems come from clear thinking, not fast typing.
+---
 
-The real output of a frontend engineer on a lean team isn't code—it's **product decisions made efficiently**. Everything else is execution hygiene. My goal is to spend all my time on product decisions and justify every other activity by how it enables more product decisions. This framing turns process into performance: does this ritual make me faster, safer, or more consistent? If not, cut it.
+# Conclusion
 
-Here's the part people miss: **you can't scale velocity faster than you can scale judgment**. Tools multiply output, but they also multiply the consequences of shallow thinking. The engineers who thrive in the AI era aren't the ones who prompt fastest—they're the ones who think clearly about what to build before they build it.
+Quality isn’t achieved through vigilance.
+Quality emerges from systems that make the right thing easy and the wrong thing hard.
 
-### The real compounding: self-improving systems
-
-If I went on vacation for a week, could someone else ship frontend code that looks exactly like code I would write? Not "similar to." Not "in the spirit of." **Exactly like.**
-
-That's my heuristic for whether a system is working. And I'm not there yet. But we're getting closer.
-
-The goal isn't to eliminate myself—it's to **institutionalize quality so velocity doesn't require heroics**. When conventions are rigid enough and automation is comprehensive enough, the system writes code like I would. Not because everyone's thinking like me, but because the guardrails encode the lessons I've learned.
-
-This is what compounds: each bug caught becomes a rule that prevents it permanently. Each architectural decision becomes a pattern that guides future work. Each repeated mistake becomes a check that blocks it pre-commit. Over time, the codebase becomes self-defending—and the team's output quality becomes independent of who's typing.
-
-Fix classes of bugs, not one-off bugs. Build systems that prevent categories of errors, not processes that catch individual mistakes. This is how one frontend engineer keeps pace with six backend engineers without burning out—and how a company moves fast without breaking trust.
-
-Quality isn't something you enforce through vigilance. It's something you **design into the system** so the right behavior is the easy behavior and the wrong behavior is hard. When that's true, speed stops being a trade-off with safety. They become the same thing.
+When your tools, patterns, automation, and judgment align, speed stops being a trade-off with safety. They become the same thing. That’s how one frontend engineer keeps pace with six backend engineers, protects trust, and ships at the speed modern teams demand.
