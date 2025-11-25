@@ -43,6 +43,30 @@ Performance is a design feature. An interface that responds instantly feels poli
 
 **Anti-pattern**: Animating every hover state. Reserve animations for low-frequency interactions where delight matters more than speed.
 
+### Preloading: Making everything feel warm
+
+Perceived performance is often more important than actual performance. Users tolerate a 500ms wait if the interface feels responsive. They rage at a 200ms delay if nothing happens on screen.
+
+**Smart preloading strategies:**
+
+- **Link prefetching**: On hover or when a link enters the viewport, prefetch the next page's data. By the time they click, it's already loaded. Next.js does this automatically with `<Link>` components in production.
+- **Route-based preloading**: If 80% of users who land on your dashboard immediately navigate to the reports page, preload that data during idle time on the dashboard.
+- **Large dynamic dependencies**: Code-split heavy libraries (charts, editors, file pickers), but preload them when the user is likely to need them. If they open a settings panel, start loading the markdown editor before they click "Edit."
+
+**When preloading is worth it:**
+- The resource is large enough that network latency matters (>100kb)
+- The user journey is predictable (A → B happens 70%+ of the time)
+- You have idle time (user is reading, scrolling, hovering)
+- The resource can be cached (subsequent visits are instant)
+
+**When to just use a skeleton:**
+- The data is small and loads in under 200ms
+- The user journey is unpredictable (they could go anywhere)
+- Preloading would waste bandwidth on mobile
+- The data is user-specific and can't be cached
+
+**The principle**: Be smart about when to preload. Don't waste resources speculatively loading everything. But when the path is obvious and the cost is low, make it feel instant.
+
 ## Optimistic Updates
 
 Assume the happy path. If the user clicks "Save," update the UI immediately. Don't wait for the server to confirm what you already validated on the client.
@@ -182,6 +206,7 @@ User errors signals friction in the UX. Friction kills adoption, retention, and 
 
 Before shipping, ask:
 - **Does it feel fast?** If not, profile it. Trim animations, optimize queries, preload data.
+- **Does it feel alive?** Motion should reinforce interactivity, not replace it. Use transitions to guide attention (button press → loading state → success), but never let motion delay feedback. A 200ms fade is helpful; a 1s animation that prevents interaction is hostile. Motion is a clarifier, not a blocker.
 - **Is the visual hierarchy clear?** Close your eyes, open them, and see where your attention lands. Is it the right place?
 - **Are high-frequency interactions instant?** Hover, click, type. No delays.
 - **Can I roll back?** If optimistic updates fail, does the UI recover gracefully?

@@ -1,5 +1,5 @@
 ---
-title: "Canonical Coding"
+title: "Canonical Coding Styles"
 description: "The value in overly prescriptive and singular correct stylistic choices"
 year: "November 2025"
 keywords: "React, Next.js, Code Quality, Conventions, Developer Experience, AI, Architecture"
@@ -37,6 +37,15 @@ This is the "canonical React" mindset: a codebase where *style rules indirectly 
 ## Convention as a Code Quality Guarantee
 
 Style rules—if chosen well—are not cosmetic. They become invariants that **mathematically reduce the space of possible bugs**.
+
+**A critical caveat:** Conventions should only prescribe choices between **strictly equivalent implementations** where one has clear redundancy or bug risk. Never enforce conventions that limit product capabilities or create implementation gaps.
+
+For example:
+- **Good convention**: "No redundant wrapper divs" — the wrapper provides no value and adds noise
+- **Good convention**: "No inline types for shared shapes" — inline types create duplication and refactoring hazards
+- **Bad convention**: "All forms must use library X" — if library X can't handle a legitimate product requirement, the convention blocks progress
+
+The rule: **if a convention prevents solving a real problem, it's not a convention—it's a constraint**. Canonical codebases eliminate objectively worse patterns, not legitimate architectural choices.
 
 ### Rule 1: Hoist derived and non-shared state as low in the tree as possible
 

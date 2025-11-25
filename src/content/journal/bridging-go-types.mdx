@@ -1,11 +1,11 @@
 ---
 title: "Bridging the Server Boundary from Go to TypeScript"
-description: "Eliminating type drift between gRPC backends and TypeScript clients through shared schemas and generated bindings."
+description: "Eliminating type drift between gRPC APIs and TypeScript clients through shared schemas and generated bindings."
 year: "November 2025"
 keywords: "Go, TypeScript, Protobuf, tRPC"
 labels: ["Engineering"]
 featured: true
-draft: false
+draft: true
 ---
 
 ## The Disconnect
@@ -16,7 +16,7 @@ We often found ourselves redefining types on the UI for consistency, manually in
 
 ## The Solution: proto-to-trpc
 
-To solve this, I built `proto-to-trpc`, a tool designed to completely replace this disjointed workflow. It runs locally on a directory of `.proto` files and generates exact, type-safe ConnectRPC definitions that can be checked directly into the codebase.
+To solve this, I built [`proto-to-trpc`](https://www.npmjs.com/package/proto-to-trpc), a tool designed to completely replace this disjointed workflow. It runs locally on a directory of `.proto` files and generates exact, type-safe ConnectRPC definitions that can be checked directly into the codebase.
 
 Type generation from Protocol Buffers isn't novel—tools like `protoc-gen-ts` have existed for years. The tRPC-compatible client generation wasn't particularly difficult either. The real innovation is in the **developer experience**: zero-config local execution that seamlessly handles first-party and third-party proto imports during generation.
 
