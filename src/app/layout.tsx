@@ -1,4 +1,6 @@
 export const dynamic = "force-static";
+export const revalidate = false;
+export const fetchCache = "force-cache";
 
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
