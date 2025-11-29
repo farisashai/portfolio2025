@@ -164,6 +164,24 @@ Viewport-based prefetching creates a thundering herd. You're overwhelming your b
 
 This isn't just about server load—it's about not lying to yourself about prediction accuracy. Viewport presence is weak signal. Hover is strong signal.
 
+## Scaling Prefetch for Dense UIs
+
+Hover works well for navigation links, buttons, and cards. But what about a table with 100 rows, each linking to a detail page like `/resources/:id`?
+
+If every row prefetches on hover, scanning down the table fires dozens of API calls. The user is just reading, not intending to click—but hover events fire anyway. You've recreated the thundering herd problem, just with a slight delay.
+
+The solution isn't to disable prefetching. It's to use a stronger signal: **mousedown**.
+
+`mousedown` fires when the user presses the mouse button, before `click` fires. It's a near-certain indicator of intent—they're actively clicking, not just passing through. By the time the click completes, navigation begins, the page loads, and the client effect schedules the query, your prefetch has had hundreds of milliseconds of head start.
+
+The tradeoff is less head start than hover. The 400ms measurement from earlier included hover-to-click time—human reflexes give you a buffer even when clicking "as fast as possible." Mousedown removes that buffer, but you still get the click-to-effect delay: the time between mousedown firing and the new page's query hook actually executing (page load, hydration, component mount, effect scheduling). That's still a meaningful head start—just not as much as hover provides.
+
+For dense link UIs:
+- **Hover prefetch**: Maximum head start, but risks wasted requests on scan-through
+- **Mousedown prefetch**: Slightly less head start, but near-zero wasted requests
+
+Use hover for sparse, high-value navigation (sidebar links, primary CTAs). Use mousedown for dense, repetitive links (table rows, list items, search results). The prefetch infrastructure is identical—you're just choosing the trigger event based on the UI density.
+
 ## The Request Deduplication Problem
 
 There's a subtle issue with hover-based prefetching: what happens when the user clicks before the prefetch completes?
