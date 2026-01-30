@@ -371,7 +371,7 @@ Compression trades CPU for fewer bytes.
 
 **Do NOT compress (or get minimal benefit):**
 - JPEG/PNG/WebP images, video (already compressed)
-- Small JSON (<1 KB)—CPU overhead + buffering delay can dominate
+- Small JSON (&lt;1 KB)—CPU overhead + buffering delay can dominate
 
 **Latency gotcha:**
 - Gzip/Brotli typically buffer data before emitting compressed output
@@ -562,7 +562,7 @@ Rough numbers, user in NYC:
 - You only pay the data RTT: **~10–20 ms**
 
 **With edge close to user:**
-- RTT can drop to **<10 ms** in some geos
+- RTT can drop to **&lt;10 ms** in some geos
 
 ### Theoretical Minimum by Mode (Warm Connection)
 

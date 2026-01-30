@@ -1,7 +1,6 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Command } from "cmdk";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search } from "lucide-react";
@@ -54,9 +53,7 @@ export function CommandMenu({ journal }: CommandMenuProps) {
           label="Command Menu"
           className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh] px-4"
         >
-          <VisuallyHidden>
-            <Dialog.Title>Command Menu</Dialog.Title>
-          </VisuallyHidden>
+          <Dialog.Title className="sr-only">Command Menu</Dialog.Title>
 
           {/* Overlay */}
           <motion.div

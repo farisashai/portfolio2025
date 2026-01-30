@@ -1,6 +1,7 @@
-import fs from "fs";
-import matter from "gray-matter";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
+
+import { compileMDX } from "next-mdx-remote/rsc";
 
 const contentDirectory = path.join(process.cwd(), "src/content");
 
@@ -72,9 +73,12 @@ function validateFrontmatter(
 export async function getMDXContent(slug: string) {
   const filePath = path.join(contentDirectory, "journal", `${slug}.mdx`);
   const source = fs.readFileSync(filePath, "utf8");
-  const { content, data } = matter(source);
-  validateFrontmatter(data, slug);
-  return { content, frontmatter: data };
+  const { content, frontmatter } = await compileMDX<MDXFrontmatter>({
+    source,
+    options: { parseFrontmatter: true },
+  });
+  validateFrontmatter(frontmatter as Record<string, unknown>, slug);
+  return { content, frontmatter };
 }
 
 export async function getAllMDXContent(): Promise<MDXFrontmatter[]> {
@@ -84,14 +88,20 @@ export async function getAllMDXContent(): Promise<MDXFrontmatter[]> {
   const isDev = process.env.NODE_ENV === "development";
   const files = fs.readdirSync(directory);
 
-  return files
-    .filter((file) => file.endsWith(".mdx"))
-    .map((file) => {
-      const slug = file.replace(/\.mdx$/, "");
-      const source = fs.readFileSync(path.join(directory, file), "utf8");
-      const { data } = matter(source);
-      validateFrontmatter(data, slug);
-      return { ...data, slug } as MDXFrontmatter;
-    })
-    .filter((item) => isDev || !item.draft);
+  const results = await Promise.all(
+    files
+      .filter((file) => file.endsWith(".mdx"))
+      .map(async (file) => {
+        const slug = file.replace(/\.mdx$/, "");
+        const source = fs.readFileSync(path.join(directory, file), "utf8");
+        const { frontmatter } = await compileMDX<MDXFrontmatter>({
+          source,
+          options: { parseFrontmatter: true },
+        });
+        validateFrontmatter(frontmatter as Record<string, unknown>, slug);
+        return { ...frontmatter, slug } as MDXFrontmatter;
+      }),
+  );
+
+  return results.filter((item) => isDev || !item.draft);
 }

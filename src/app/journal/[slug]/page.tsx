@@ -1,7 +1,6 @@
 export const dynamic = "force-static";
 
 import type { Metadata } from "next";
-import { MDXRemote } from "next-mdx-remote/rsc";
 import { BackButton } from "@/components/back-button";
 import { Container } from "@/components/container";
 import { getAllMDXContent, getMDXContent } from "@/lib/mdx";
@@ -67,7 +66,7 @@ export default async function ArticlePage({
             <blockquote>
               <p>{frontmatter.description}</p>
             </blockquote>
-            <MDXRemote source={content} />
+            {content}
           </div>
         </article>
       </Container>
