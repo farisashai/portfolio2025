@@ -52,7 +52,7 @@ export default async function ArticlePage({
               {frontmatter.title}
             </h1>
             <div className="flex gap-4 text-sm text-muted-foreground font-mono uppercase tracking-wider">
-              <span>{frontmatter.year}</span>
+              <span>{frontmatter.date}</span>
               <span>•</span>
               <span>{frontmatter.labels.join(", ")}</span>
             </div>

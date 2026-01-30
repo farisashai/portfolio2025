@@ -44,7 +44,7 @@ export default async function JournalPage() {
                 </div>
                 <div className="hidden sm:flex flex-col items-end gap-1 mt-1">
                   <span className="text-sm text-muted-foreground font-mono tabular-nums">
-                    {entry.year}
+                    {entry.date}
                   </span>
                 </div>
               </Link>

@@ -7,7 +7,7 @@ const contentDirectory = path.join(process.cwd(), "src/content");
 export type MDXFrontmatter = {
   title: string;
   description: string;
-  year: string;
+  date: string;
   keywords: string;
   labels: string[];
   featured?: boolean;
@@ -24,7 +24,7 @@ const SUPPORTED_LABELS = [
   "Other",
 ] as const;
 
-const REQUIRED_FIELDS = ["title", "description", "year", "keywords", "labels"];
+const REQUIRED_FIELDS = ["title", "description", "date", "keywords", "labels"];
 const OPTIONAL_FIELDS = ["featured", "draft"];
 const SUPPORTED_FIELDS = [...REQUIRED_FIELDS, ...OPTIONAL_FIELDS];
 
